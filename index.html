@@ -150,7 +150,7 @@
   .sheet-head{background:var(--green);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:2px solid var(--gold)}
   .sheet-head b{font-size:18px}
   .sheet-head button{background:none;border:0;color:#fff;font-size:28px;cursor:pointer}
-  .stabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid #ddd}
+  .stabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid #ddd}
   .stabs button{border:2px solid var(--green);background:#fff;color:var(--green);border-radius:30px;padding:7px 14px;font-weight:700;font-size:13px;cursor:pointer}
   .stabs button.on{background:var(--green);color:#fff}
   .sheet-body{flex:1;overflow:auto;padding:14px 16px 110px;max-width:640px;width:100%;margin:0 auto}
@@ -228,7 +228,6 @@
     nav{display:none}
     .rider-btn{margin-left:auto}
     .stabs{grid-template-columns:repeat(2,1fr)}
-    .stabs button:last-child{grid-column:1/-1}
     .grid{grid-template-columns:repeat(2,1fr);gap:14px}
     .info h4{font-size:13px}
     .fb .tag{font-size:10px}
@@ -337,8 +336,7 @@
   <div class="sheet-head"><b>📦 Stok &amp; Laporan</b><button onclick="closeStok()" aria-label="Tutup">×</button></div>
   <div class="stabs" id="stabs">
     <button data-s="saya" onclick="stokTab('saya')">Stok Awal</button>
-    <button data-s="prod" onclick="stokTab('prod')">Dari Produksi</button>
-    <button data-s="oper" onclick="stokTab('oper')">Oper Rider</button>
+    <button data-s="oper" onclick="stokTab('oper')">+/− Stok</button>
     <button data-s="riwayat" onclick="stokTab('riwayat')">Riwayat</button>
     <button data-s="lap" onclick="stokTab('lap')">📋 Laporan</button>
   </div>
@@ -548,7 +546,7 @@
   }
   function refreshAll(){ clampCart(); simpanSemua(); renderMenu(); renderCart(); renderStok(); }
 
-  let sTab = "saya", operMode = "terima", draft = {}, namaDraft = "";
+  let sTab = "saya", operMode = "produksi", draft = {}, namaDraft = "";
   function openStok(t){ if(t) sTab = t; draft = {}; document.getElementById("sheet").classList.add("show"); renderStok(); }
   function closeStok(){ document.getElementById("sheet").classList.remove("show"); }
   function stokTab(t){ sTab = t; draft = {}; renderStok(); document.getElementById("sheetBody").scrollTop = 0; }
@@ -581,7 +579,7 @@
     if(sTab === "saya"){
       const kunci = sudahTransaksi();
       b.innerHTML = `<p class="hint">Stok awal = jumlah yang dibawa dari rumah. Angka ini <b>tidak berubah</b> walaupun stok sudah terjual.</p>` +
-        (kunci ? '<p class="hint" style="color:#14291b;font-weight:600">🔒 Terkunci karena sudah ada transaksi hari ini. Untuk mengisi ulang, pakai tab Produksi atau Oper. Hari baru: tombol Mulai Hari Baru di tab Laporan.</p>' : '') +
+        (kunci ? '<p class="hint" style="color:#14291b;font-weight:600">🔒 Terkunci karena sudah ada transaksi hari ini. Untuk mengisi ulang, pakai tab +/− Stok. Hari baru: tombol Mulai Hari Baru di tab Laporan.</p>' : '') +
         MENU.map(m => `<div class="srow"><div class="sn"><b>${m.name}</b><small>Terjual hari ini: ${terjual[m.id]||0} · Sisa: ${hasStok(m.id) ? stok[m.id] : "–"}</small></div>
           <input class="sin" data-id="${m.id}" inputmode="numeric" placeholder="–" value="${awal[m.id] !== undefined ? awal[m.id] : ""}" ${kunci ? "disabled" : ""} oninput="hitungSaya()"></div>`).join("") +
         `<div class="total-box" id="sumBox">${isiTotal("Total stok awal", awal)}</div>` +
@@ -591,16 +589,13 @@
           <input class="kin" data-id="${m.id}" inputmode="numeric" value="${stok[m.id]}"></div>`).join("") +
           `<button class="done" onclick="simpanKoreksi()">Simpan Koreksi Sisa</button></details>`
          : `<button class="done" onclick="simpanSaya()">Simpan Stok Awal</button>`);
-    } else if(sTab === "prod"){
-      b.innerHTML = `<p class="hint">Tambah stok yang diambil dari rumah produksi. Isi jumlah cup per menu.</p>` + barisStepper() +
-        `<div class="total-box" id="sumBox">${isiTotal(judulDraft(), itemsDraft())}</div><button class="done" onclick="simpanProduksi()">Tambah ke Stok</button>`;
     } else if(sTab === "oper"){
-      const terima = operMode === "terima";
-      b.innerHTML = `<div class="seg"><button class="${terima ? "on" : ""}" onclick="setOper('terima')">⬇ Saya MENERIMA</button><button class="${!terima ? "on" : ""}" onclick="setOper('beri')">⬆ Saya MEMBERI</button></div>
-        <label for="riderName">${terima ? "Nama rider yang memberi stok" : "Nama rider yang menerima stok"}</label>
+      const prod = operMode === "produksi", terima = operMode === "terima";
+      const seg = `<div class="seg"><button class="${prod ? "on" : ""}" onclick="setOper('produksi')">🏭 Dari Rumah</button><button class="${terima ? "on" : ""}" onclick="setOper('terima')">⬇ Terima Rider</button><button class="${operMode === "beri" ? "on" : ""}" onclick="setOper('beri')">⬆ Beri Rider</button></div>`;
+      const nm = prod ? `<p class="hint">Tambah stok yang diambil dari rumah produksi. Isi jumlah cup per menu.</p>` : `<label for="riderName">${terima ? "Nama rider yang memberi stok" : "Nama rider yang menerima stok"}</label>
         <input id="riderName" list="riderList" placeholder="Nama rider" value="${esc(namaDraft)}" oninput="namaDraft=this.value">
-        <datalist id="riderList">${daftarRider.map(n => `<option value="${esc(n)}">`).join("")}</datalist>` +
-        barisStepper() + `<div class="total-box" id="sumBox">${isiTotal(judulDraft(), itemsDraft())}</div><button class="done" onclick="simpanOper()">${terima ? "Konfirmasi Terima Stok" : "Konfirmasi Beri Stok"}</button>`;
+        <datalist id="riderList">${daftarRider.map(n => `<option value="${esc(n)}">`).join("")}</datalist>`;
+      b.innerHTML = seg + nm + barisStepper() + `<div class="total-box" id="sumBox">${isiTotal(judulDraft(), itemsDraft())}</div><button class="done" onclick="${prod ? "simpanProduksi()" : "simpanOper()"}">${prod ? "Tambah ke Stok" : (terima ? "Konfirmasi Terima Stok" : "Konfirmasi Beri Stok")}</button>`;
     } else if(sTab === "lap"){
       renderLaporan();
     } else {
@@ -638,7 +633,7 @@
     document.querySelectorAll(".sin").forEach(i => { const n = parseInt(i.value.replace(/\D/g,"")) || 0; if(n) m[i.dataset.id] = n; });
     const el = document.getElementById("sumBox"); if(el) el.innerHTML = isiTotal("Total stok awal", m);
   }
-  function judulDraft(){ return sTab === "prod" ? "Total yang ditambahkan" : (operMode === "terima" ? "Total yang diterima" : "Total yang diberikan"); }
+  function judulDraft(){ return operMode === "produksi" ? "Total yang ditambahkan" : (operMode === "terima" ? "Total yang diterima" : "Total yang diberikan"); }
   function hitungDraft(){
     const el = document.getElementById("sumBox"); if(el) el.innerHTML = isiTotal(judulDraft(), itemsDraft());
   }
@@ -773,7 +768,7 @@
   }
   function htmlHitung(R){
     const r = (label, v, cls) => `<div class="ln ${cls || ""}"><span>${label}</span><span>${rp(v)}</span></div>`;
-    return r("Total stok (awal + produksi)", R.A) + r("+ Stok dari rider lain", R.B) + r("− Stok diberikan ke rider lain", R.C) + r("− Sisa stok", R.D) +
+    return r("Total stok (stok awal + tambah dari rumah)", R.A) + r("+ Stok dari rider lain", R.B) + r("− Stok diberikan ke rider lain", R.C) + r("− Sisa stok", R.D) +
       r("= Nilai stok terjual", R.S, "sum") + r("− QRIS", R.Q) + r("− Bon (belum dibayar)", R.N) + r("− Pinjaman", R.P) +
       (PENGELUARAN_KURANGI_CASH ? r("− Pengeluaran", R.E) : "") +
       r("= Uang cash hasil jualan", R.X, "cash" + (R.X < 0 ? " neg" : ""));
@@ -806,7 +801,7 @@
   function renderLaporan(){
     const R = susunLaporan(), L = R.L, tgl = tglLaporan();
     const s1 = R.rowsStok.length
-      ? R.rowsStok.map(r => baris(r.m, r.q) + (r.pr ? `<div class="ln sub"><span>awal ${r.aw} + dari produksi ${r.pr}</span><span></span></div>` : "")).join("") +
+      ? R.rowsStok.map(r => baris(r.m, r.q) + (r.pr ? `<div class="ln sub"><span>stok awal ${r.aw} + tambah dari rumah ${r.pr}</span><span></span></div>` : "")).join("") +
         `<div class="ln tot"><span>Total ${R.cupA} cup</span><span>${rp(R.A)}</span></div>`
       : `<p class="empty-ln">Belum ada stok. Isi dulu di tab Stok Awal.</p>`;
     const s3 = R.sisa.length
@@ -822,7 +817,7 @@
       `<div class="rcard"><h4>Laporan Harian</h4><div class="ln"><span>Tanggal</span><span>${fmtTgl(tgl)}</span></div>
         <input id="namaRider" placeholder="Nama karyawan" value="${esc(namaRider)}" oninput="namaRider=this.value;simpanSemua()" autocomplete="off"></div>` +
       `<div class="rcard"><h4>1. Total Stok</h4>${s1}</div>` +
-      `<div class="rcard"><h4>2. Oper Stok</h4>${bagianOper("Tambah stok dari rider lain", grupOper(L.opT), "Dari")}${bagianOper("Stok diberikan ke rider lain", grupOper(L.opB), "Ke")}</div>` +
+      `<div class="rcard"><h4>2. +/− Stok dari Rider Lain</h4>${bagianOper("Tambah stok dari rider lain", grupOper(L.opT), "Dari")}${bagianOper("Stok diberikan ke rider lain", grupOper(L.opB), "Ke")}</div>` +
       `<div class="rcard"><h4>3. Sisa Seluruh Stok</h4>${s3}</div>` +
       `<div class="rcard"><h4>4. QRIS</h4><div class="ln tot2"><span>Qris =</span><span id="qrisVal">${rp(R.Q)}</span></div><p class="qm" id="qrisNote">${catQris(R)}</p>
         <input id="qrisIn" inputmode="numeric" placeholder="Koreksi manual (kosongkan = otomatis)" value="${qrisManual === null ? "" : nf(qrisManual)}" oninput="fmtRp(this);setQris(this.value)" autocomplete="off"></div>` +
@@ -849,10 +844,10 @@
     o.push("Karyawan: " + (namaRider.trim() || "-"));
     o.push("");
     o.push("*1. TOTAL STOK*");
-    if(R.rowsStok.length) R.rowsStok.forEach(r => o.push(bar(r.m, r.q) + (r.pr ? " (awal " + r.aw + " + produksi " + r.pr + ")" : ""))); else o.push("-");
+    if(R.rowsStok.length) R.rowsStok.forEach(r => o.push(bar(r.m, r.q) + (r.pr ? " (stok awal " + r.aw + " + tambah dari rumah " + r.pr + ")" : ""))); else o.push("-");
     o.push("Total " + R.cupA + " cup = " + rp(R.A));
     o.push("");
-    o.push("*2. OPER STOK*");
+    o.push("*2. +/- STOK (OPER RIDER)*");
     opr("Tambah stok dari rider lain:", grupOper(L.opT), "Dari");
     if(L.opT.length) o.push("Total " + R.cupB + " cup = " + rp(R.B));
     opr("Diberikan ke rider lain:", grupOper(L.opB), "Ke");
