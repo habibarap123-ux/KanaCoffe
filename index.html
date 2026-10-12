@@ -150,7 +150,7 @@
   .sheet-head{background:var(--green);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:2px solid var(--gold)}
   .sheet-head b{font-size:18px}
   .sheet-head button{background:none;border:0;color:#fff;font-size:28px;cursor:pointer}
-  .stabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid #ddd}
+  .stabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid #ddd}
   .stabs button{border:2px solid var(--green);background:#fff;color:var(--green);border-radius:30px;padding:7px 14px;font-weight:700;font-size:13px;cursor:pointer}
   .stabs button.on{background:var(--green);color:#fff}
   .sheet-body{flex:1;overflow:auto;padding:14px 16px 110px;max-width:640px;width:100%;margin:0 auto}
@@ -166,7 +166,7 @@
   .seg button{flex:1;border:2px solid var(--green);background:#fff;color:var(--green);border-radius:12px;padding:10px 6px;font-weight:700;font-size:14px;cursor:pointer}
   .seg button.on{background:var(--green);color:#fff}
   .sheet label{font-size:13px;font-weight:600;color:#555}
-  #riderName{width:100%;font-size:18px;padding:10px 12px;border:2px solid var(--green);border-radius:10px;margin:6px 0 14px;font-family:inherit}
+  #riderName,#editNama{width:100%;font-size:18px;padding:10px 12px;border:2px solid var(--green);border-radius:10px;margin:6px 0 14px;font-family:inherit}
   .sheet .done{margin-top:8px}
   .sum{background:var(--green);color:#fff;border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-around;text-align:center}
   .sum b{display:block;font-size:20px;color:var(--gold)}
@@ -220,14 +220,45 @@
 
   .log{background:#fff;border-radius:10px;padding:9px 12px;margin-bottom:6px;font-size:13px;line-height:1.5;box-shadow:0 1px 3px rgba(0,0,0,.07)}
   .log small{display:block;color:#888;font-size:11px}
+  .logact{display:flex;gap:8px;margin-top:8px}
+  .logact button{flex:1;border:1px solid var(--green);background:#fff;color:var(--green);border-radius:20px;padding:6px 10px;font-weight:700;font-size:12px;cursor:pointer}
+  .logact button.del{border-color:var(--red);color:var(--red)}
+  .editbtns{display:flex;gap:8px;margin-top:8px}
+  .editbtns .done{margin-top:0}
+  .editbtns .cancel{background:#fff;color:var(--green);border:2px solid var(--green)}
   .reset{width:100%;margin-top:10px;background:#fff;color:var(--red);border:2px solid var(--red);border-radius:30px;padding:10px;font-weight:700;cursor:pointer}
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--green-dark);color:#fff;padding:10px 18px;border-radius:24px;z-index:300;font-size:14px;font-weight:600;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center}
   .toast.show{opacity:1}
+  body.hascart .toast{bottom:92px}
+
+  /* BAR TOTAL MELAYANG */
+  .cartbar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:520px;margin:0 auto;z-index:60;display:none;align-items:center;justify-content:space-between;gap:10px;background:var(--green);color:#fff;border:2px solid var(--gold);border-radius:30px;padding:12px 18px;font-weight:700;font-size:15px;box-shadow:0 6px 18px rgba(0,0,0,.35);cursor:pointer}
+  .cartbar b{color:var(--gold);white-space:nowrap}
+  body.hascart{padding-bottom:84px}
+
+  /* PIUTANG & REKAP */
+  .bonrow .br button.del{border-color:var(--red);color:var(--red)}
+  .bar{display:flex;align-items:center;gap:8px;font-size:13px;margin:6px 0}
+  .bar .nm{flex:0 0 112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bar .tr{flex:1;background:#e8f0ea;border-radius:8px;height:16px;overflow:hidden}
+  .bar .fl{height:100%;background:var(--green);border-radius:8px}
+  .bar .vl{flex:0 0 52px;text-align:right;font-weight:800}
+  .hours{display:flex;align-items:flex-end;gap:3px;height:132px;margin-top:10px}
+  .hours .col{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+  .hours .b{width:100%;background:var(--gold);border-radius:4px 4px 0 0;min-height:2px}
+  .hours .col.top .b{background:var(--green)}
+  .hours .col span{font-size:10px;font-weight:800;color:#444;margin-bottom:2px}
+  .hours .col small{font-size:9.5px;color:#777;margin-top:3px}
+  .wk{background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .wk summary{cursor:pointer;font-weight:800;font-size:14px;color:var(--green);line-height:1.4}
+  .wk summary small{display:block;color:#777;font-weight:600;font-size:12px}
+  .wk .done{margin-top:10px;padding:10px;font-size:14px}
+  .wk .ln.dayrow{font-size:13px}
 
   @media(max-width:640px){
     nav{display:none}
     .rider-btn{margin-left:auto}
-    .stabs{grid-template-columns:repeat(2,1fr)}
+    .stabs button{padding:7px 4px;font-size:12.5px}
     .grid{grid-template-columns:repeat(2,1fr);gap:14px}
     .info h4{font-size:13px}
     .fb .tag{font-size:10px}
@@ -255,7 +286,7 @@
     <button class="stok-btn" onclick="openStok()" aria-label="Kelola Stok" title="Kelola Stok">📦</button>
     <button class="cart-btn" onclick="toggleCart()" aria-label="Keranjang">🛒<span id="count">0</span></button>
   </div>
-  <div class="riderbar" id="riderbar"><span>MODE RIDER aktif</span><button onclick="openStok()">📦 Kelola Stok</button><button onclick="openStok('lap')">📋 Laporan</button><button onclick="toggleRider()">Keluar</button></div>
+  <div class="riderbar" id="riderbar"><span>MODE RIDER aktif</span><button onclick="openStok()">📦 Kelola Stok</button><button onclick="openStok('lap')">📋 Laporan</button><button onclick="openStok('piutang')">📒 Piutang</button><button onclick="toggleRider()">Keluar</button></div>
 </header>
 
 <section class="hero" id="home">
@@ -294,6 +325,7 @@
   <p class="copy">© 2026 Kana Coffee. Always in Heart.<br><span class="credit">Website dibuat oleh <b>Abibb</b></span></p>
 </footer>
 
+<div class="cartbar" id="cartbar" onclick="toggleCart()"><span id="cbInfo"></span><b>Lihat Pesanan ›</b></div>
 <div class="overlay" id="overlay" onclick="toggleCart()"></div>
 <aside class="drawer" id="drawer">
   <header><b>Pesanan / Kasir</b><button onclick="toggleCart()">×</button></header>
@@ -319,7 +351,8 @@
       </div>
       <div id="bonBox" style="display:none">
         <label for="bonNama">Nama pelanggan yang bon</label>
-        <input id="bonNama" placeholder="Nama pelanggan" autocomplete="off">
+        <datalist id="bonList"></datalist>
+        <input id="bonNama" list="bonList" placeholder="Nama pelanggan" autocomplete="off">
         <p class="qhint">Pelanggan berutang <b id="bonTotal">Rp 0</b>. Tidak ada uang diterima sekarang. Bon masuk ke tab Laporan.</p>
       </div>
       <button class="done" onclick="finish()">✔ Selesai / Pesanan Baru</button>
@@ -339,6 +372,8 @@
     <button data-s="oper" onclick="stokTab('oper')">+/− Stok</button>
     <button data-s="riwayat" onclick="stokTab('riwayat')">Riwayat</button>
     <button data-s="lap" onclick="stokTab('lap')">📋 Laporan</button>
+    <button data-s="piutang" onclick="stokTab('piutang')">📒 Piutang</button>
+    <button data-s="rekap" onclick="stokTab('rekap')">📊 Rekap</button>
   </div>
   <div class="sheet-body" id="sheetBody"></div>
 </div>
@@ -429,12 +464,22 @@
     }).join("") : '<p class="empty">Belum ada pesanan.</p>';
     document.getElementById("total").textContent = rp(total);
     document.getElementById("count").textContent = count;
-    renderPay();
+    renderPay(); updBar();
   }
 
   function toggleCart(){
     document.getElementById("drawer").classList.toggle("show");
     document.getElementById("overlay").classList.toggle("show");
+    updBar();
+  }
+  function updBar(){
+    const bar = document.getElementById("cartbar"); if(!bar) return;
+    const count = Object.keys(cart).reduce((s, id) => s + cart[id], 0);
+    const buka = document.getElementById("drawer").classList.contains("show");
+    const tampil = count > 0 && !buka;
+    bar.style.display = tampil ? "flex" : "none";
+    document.body.classList.toggle("hascart", tampil);
+    document.getElementById("cbInfo").textContent = "🛒 " + count + " item · " + rp(cartTotal());
   }
 
   document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
@@ -490,6 +535,7 @@
     document.getElementById("qTotal").textContent = rp(t);
     const bt = document.getElementById("bonTotal"); if(bt) bt.textContent = rp(t);
     document.getElementById("qfTotal").textContent = "Nominal: " + rp(t);
+    const dl = document.getElementById("bonList"); if(dl) dl.innerHTML = namaBonSemua().map(n => `<option value="${esc(n)}">`).join("");
     document.getElementById("quick").innerHTML =
       `<button onclick="setCash(${t})">Uang pas</button>` +
       [10000,20000,50000,100000].map(v => `<button onclick="setCash(${v})">${v/1000}rb</button>`).join("");
@@ -509,8 +555,9 @@
     const t = cartTotal();
     if(!t){ alert("Belum ada pesanan."); return; }
     if(pay === "cash" && cash < t && !confirm("Uang belum cukup. Tetap selesaikan pesanan?")) return;
-    const namaBon = (document.getElementById("bonNama").value || "").trim();
+    let namaBon = (document.getElementById("bonNama").value || "").trim();
     if(pay === "bon" && !namaBon){ toast("Isi nama pelanggan untuk bon"); document.getElementById("bonNama").focus(); return; }
+    if(pay === "bon") namaBon = canonNama(namaBon);
     const items = {};
     Object.keys(cart).forEach(id => { items[id] = cart[id]; });
     Object.keys(items).forEach(id => {
@@ -526,13 +573,14 @@
   function simpan(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
   let stok = muat("kana_stok", {}), terjual = muat("kana_terjual", {}), riwayat = muat("kana_riwayat", []), daftarRider = muat("kana_riders", []);
   let awal = muat("kana_awal", {}), kas = muat("kana_kas", 100000), namaRider = muat("kana_nama", ""), qrisManual = muat("kana_qrisManual", null);
-  function simpanSemua(){ simpan("kana_stok", stok); simpan("kana_terjual", terjual); simpan("kana_riwayat", riwayat); simpan("kana_riders", daftarRider); simpan("kana_soldout", soldOut); simpan("kana_awal", awal); simpan("kana_kas", kas); simpan("kana_nama", namaRider); simpan("kana_qrisManual", qrisManual); }
+  let piutang = muat("kana_piutang", []), arsip = muat("kana_arsip", []), pelanggan = muat("kana_pelanggan", []);
+  function simpanSemua(){ simpan("kana_stok", stok); simpan("kana_terjual", terjual); simpan("kana_riwayat", riwayat); simpan("kana_riders", daftarRider); simpan("kana_soldout", soldOut); simpan("kana_awal", awal); simpan("kana_kas", kas); simpan("kana_nama", namaRider); simpan("kana_qrisManual", qrisManual); simpan("kana_piutang", piutang); simpan("kana_arsip", arsip); simpan("kana_pelanggan", pelanggan); }
   function hasStok(id){ return stok[id] !== undefined; }
   function isSold(id){ return !!soldOut[id] || (hasStok(id) && stok[id] <= 0); }
   function left(id){ return hasStok(id) ? stok[id] : Infinity; }
   function nameOf(id){ return MENU.find(x => x.id == id).name; }
   function esc(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
-  function catat(e){ e.t = Date.now(); riwayat.push(e); if(riwayat.length > 1500) riwayat = riwayat.slice(-1500); simpanSemua(); }
+  function catat(e){ e.t = Date.now(); while(riwayat.some(x => x.t === e.t)) e.t++; riwayat.push(e); if(riwayat.length > 1500) riwayat = riwayat.slice(-1500); simpanSemua(); }
   function clampCart(){
     Object.keys(cart).forEach(id => {
       if(isSold(id)) delete cart[id];
@@ -547,9 +595,10 @@
   function refreshAll(){ clampCart(); simpanSemua(); renderMenu(); renderCart(); renderStok(); }
 
   let sTab = "saya", operMode = "produksi", draft = {}, namaDraft = "";
+  let editT = null, editItems = {}, editPay = "cash", editNama = "";
   function openStok(t){ if(t) sTab = t; draft = {}; document.getElementById("sheet").classList.add("show"); renderStok(); }
-  function closeStok(){ document.getElementById("sheet").classList.remove("show"); }
-  function stokTab(t){ sTab = t; draft = {}; renderStok(); document.getElementById("sheetBody").scrollTop = 0; }
+  function closeStok(){ editT = null; document.getElementById("sheet").classList.remove("show"); }
+  function stokTab(t){ sTab = t; draft = {}; editT = null; renderStok(); document.getElementById("sheetBody").scrollTop = 0; }
   function setOper(m){ operMode = m; draft = {}; renderStok(); }
 
   function barisStepper(){
@@ -598,7 +647,16 @@
       b.innerHTML = seg + nm + barisStepper() + `<div class="total-box" id="sumBox">${isiTotal(judulDraft(), itemsDraft())}</div><button class="done" onclick="${prod ? "simpanProduksi()" : "simpanOper()"}">${prod ? "Tambah ke Stok" : (terima ? "Konfirmasi Terima Stok" : "Konfirmasi Beri Stok")}</button>`;
     } else if(sTab === "lap"){
       renderLaporan();
+    } else if(sTab === "piutang"){
+      b.innerHTML = htmlPiutang();
+    } else if(sTab === "rekap"){
+      b.innerHTML = htmlRekap();
     } else {
+      if(editT !== null){
+        const eo = riwayat.find(x => x.t === editT && x.type === "jual");
+        if(eo){ b.innerHTML = htmlEditor(eo); return; }
+        editT = null;
+      }
       const jual = riwayat.filter(e => e.type === "jual");
       const cup = jual.reduce((s,e) => s + Object.keys(e.items).reduce((a,id) => a + e.items[id], 0), 0);
       const omzet = jual.reduce((s,e) => s + e.total, 0);
@@ -609,15 +667,305 @@
         else if(e.type === "produksi") t = `🏭 Tambah dari produksi · ${itemsText(e.items)}`;
         else if(e.type === "oper") t = e.dir === "terima" ? `⬇ Terima dari ${esc(e.rider)} · ${itemsText(e.items)}` : `⬆ Beri ke ${esc(e.rider)} · ${itemsText(e.items)}`;
         else if(e.type === "pinjam") t = `💸 Pinjaman · ${esc(e.ket)} · ${rp(e.jml)}`;
+        else if(e.type === "batal") t = "↩ " + esc(e.ket);
+        else if(e.type === "bayarbon") t = `💰 Pelunasan bon ${esc(e.nama)} (${e.metode === "qris" ? "QRIS" : "Tunai"}) · ${itemsText(e.items)} · ${rp(e.total)}${e.baru ? "" : " · bon lama"}`;
         else if(e.type === "keluar") t = `🧾 Pengeluaran · ${esc(e.ket)} · ${rp(e.jml)}`;
         else t = `${e.koreksi ? "✏️ Koreksi stok" : "📦 Stok awal diatur"} · ${itemsText(e.items)}`;
-        return `<div class="log">${t}<small>${w}</small></div>`;
+        if(e.type === "jual" && e.diubah) t += " · <i>(sudah diubah)</i>";
+        const act = e.type === "bayarbon" ? `<div class="logact"><button class="del" onclick="batalBayar(${e.t})">↩ Batalkan pelunasan</button></div>` : e.type === "jual" ? `<div class="logact"><button onclick="mulaiUbah(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanJual(${e.t})">🗑 Batalkan</button></div>` : "";
+        return `<div class="log">${t}<small>${w}</small>${act}</div>`;
       };
       b.innerHTML = `<div class="sum"><div><b>${cup}</b><small>cup terjual</small></div><div><b>${rp(omzet)}</b><small>total penjualan</small></div></div>` +
         (riwayat.length ? riwayat.slice().reverse().slice(0, 60).map(label).join("") : `<p class="hint">Belum ada riwayat.</p>`) +
-        `<button class="reset" onclick="resetHari()">Mulai Hari Baru (hapus riwayat)</button>`;
+        `<button class="reset" onclick="resetHari()">Mulai Hari Baru (tutup &amp; arsipkan)</button>`;
     }
   }
+
+  // ===== UBAH / BATALKAN TRANSAKSI =====
+  const payLabel = e => e.pay === "qris" ? "QRIS" : e.pay === "bon" ? "Bon" : "Tunai";
+  function kembalikanJual(e){
+    Object.keys(e.items).forEach(id => {
+      if(hasStok(id)) stok[id] += e.items[id];
+      terjual[id] = Math.max(0, (terjual[id]||0) - e.items[id]);
+    });
+  }
+  function ringkasJual(e){ return itemsText(e.items) + " (" + payLabel(e) + ", " + rp(e.total) + ")"; }
+  function batalkanJual(t){
+    const e = riwayat.find(x => x.t === t && x.type === "jual"); if(!e) return;
+    if(e.pay === "bon" && e.lunas){ toast("Bon ini sudah dilunasi. Batalkan pelunasan dulu di Riwayat"); return; }
+    if(!confirm("Batalkan transaksi ini?\n" + itemsText(e.items) + " · " + rp(e.total) + "\nStok akan dikembalikan dan transaksi dihapus dari laporan.")) return;
+    kembalikanJual(e);
+    riwayat = riwayat.filter(x => x !== e);
+    catat({type:"batal", ket:"Dibatalkan: " + ringkasJual(e)});
+    editT = null; refreshAll(); toast("Transaksi dibatalkan, stok dikembalikan");
+  }
+  function mulaiUbah(t){
+    const e = riwayat.find(x => x.t === t && x.type === "jual"); if(!e) return;
+    if(e.pay === "bon" && e.lunas){ toast("Bon ini sudah dilunasi. Batalkan pelunasan dulu di Riwayat"); return; }
+    editT = t; editItems = Object.assign({}, e.items); editPay = e.pay || "cash"; editNama = e.nama || "";
+    renderStok(); document.getElementById("sheetBody").scrollTop = 0;
+  }
+  function batalUbah(){ editT = null; renderStok(); }
+  function batasEdit(id, v){
+    if(v < 0) v = 0;
+    const e = riwayat.find(x => x.t === editT);
+    const mx = hasStok(id) ? stok[id] + ((e && e.items[id]) || 0) : Infinity;
+    if(v > mx){ toast("Stok " + nameOf(id) + " hanya " + mx); v = mx; }
+    return v;
+  }
+  function updEditSum(){ const el = document.getElementById("editSum"); if(el) el.innerHTML = isiTotal("Total setelah diubah", editItems); }
+  function stepEdit(id, d){ const v = batasEdit(id, (editItems[id]||0) + d); editItems[id] = v; document.getElementById("eq"+id).value = v; updEditSum(); }
+  function setEditQ(id, el){
+    const raw = parseInt(el.value.replace(/\D/g,"")) || 0, v = batasEdit(id, raw);
+    editItems[id] = v; if(v !== raw || el.value === "") el.value = v; updEditSum();
+  }
+  function setEditPay(p){ editPay = p; rerender(); }
+  function htmlEditor(e){
+    const w = new Date(e.t).toLocaleString("id-ID", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
+    const row = m => `<div class="srow"><div class="sn"><b>${m.name}</b><small>${rp(m.price)}${hasStok(m.id) ? " · stok tersedia: " + (stok[m.id] + (e.items[m.id]||0)) : ""}</small></div>
+      <div class="step"><button onclick="stepEdit(${m.id},-1)">−</button><input class="qin" id="eq${m.id}" inputmode="numeric" value="${editItems[m.id]||0}" oninput="setEditQ(${m.id},this)"><button onclick="stepEdit(${m.id},1)">+</button></div></div>`;
+    const pb = (p, lbl) => `<button class="${editPay === p ? "on" : ""}" onclick="setEditPay('${p}')">${lbl}</button>`;
+    return `<p class="hint">Ubah transaksi <b>${w}</b>. Stok dan laporan otomatis menyesuaikan.</p>` +
+      `<div class="warn">Sebelumnya: ${esc(ringkasJual(e))}</div>` +
+      MENU.map(row).join("") +
+      `<label>Pembayaran</label><div class="seg" style="margin-top:6px">${pb("cash","💵 Tunai")}${pb("qris","QRIS")}${pb("bon","📒 Bon")}</div>` +
+      (editPay === "bon" ? `<label for="editNama">Nama pelanggan yang bon</label><input id="editNama" placeholder="Nama pelanggan" value="${esc(editNama)}" oninput="editNama=this.value" autocomplete="off">` : "") +
+      `<div class="total-box" id="editSum">${isiTotal("Total setelah diubah", editItems)}</div>` +
+      `<div class="editbtns"><button class="done cancel" onclick="batalUbah()">Kembali</button><button class="done" onclick="simpanUbah()">Simpan Perubahan</button></div>`;
+  }
+  function simpanUbah(){
+    const e = riwayat.find(x => x.t === editT && x.type === "jual"); if(!e){ editT = null; renderStok(); return; }
+    const items = {}; Object.keys(editItems).forEach(id => { if(editItems[id] > 0) items[id] = editItems[id]; });
+    if(!Object.keys(items).length){ toast("Isi minimal 1 cup, atau pakai Batalkan"); return; }
+    if(editPay === "bon" && !editNama.trim()){ toast("Isi nama pelanggan untuk bon"); return; }
+    for(const id of Object.keys(items)){
+      if(hasStok(id) && stok[id] + (e.items[id]||0) < items[id]){ toast("Stok " + nameOf(id) + " tidak cukup"); return; }
+    }
+    const lama = ringkasJual(e);
+    kembalikanJual(e);
+    Object.keys(items).forEach(id => {
+      if(hasStok(id)) stok[id] = Math.max(0, stok[id] - items[id]);
+      terjual[id] = (terjual[id]||0) + items[id];
+    });
+    e.items = items; e.total = rupiahCup(items).v; e.pay = editPay; e.diubah = true;
+    if(editPay === "bon"){ e.nama = canonNama(editNama); } else { delete e.nama; delete e.lunas; }
+    catat({type:"batal", ket:"Diubah: " + lama + " → " + ringkasJual(e)});
+    editT = null; refreshAll(); toast("Transaksi diperbaiki");
+  }
+
+  // ===== PIUTANG (BON) & REKAP MINGGUAN =====
+  let metodeBayar = "cash", rekapRange = "minggu";
+  const pad2 = n => String(n).padStart(2, "0");
+  const tglKey = ms => { const d = new Date(ms); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); };
+  const keyDate = k => { const a = k.split("-").map(Number); return new Date(a[0], a[1] - 1, a[2]); };
+  const addDays = (k, n) => { const d = keyDate(k); d.setDate(d.getDate() + n); return tglKey(d.getTime()); };
+  const mondayKey = k => addDays(k, -((keyDate(k).getDay() + 6) % 7));
+  const fmtPendek = k => keyDate(k).toLocaleDateString("id-ID", {day:"numeric", month:"short"});
+  const fmtHari = k => keyDate(k).toLocaleDateString("id-ID", {weekday:"short", day:"numeric", month:"short"});
+  const rentangMinggu = mon => fmtPendek(mon) + " – " + keyDate(addDays(mon, 6)).toLocaleDateString("id-ID", {day:"numeric", month:"short", year:"numeric"});
+  const namaMenu = id => { const m = produk(id); return m ? m.name : "Menu " + id; };
+
+  function namaBonSemua(){
+    const seen = {}, out = [];
+    pelanggan.concat(piutang.map(b => b.nama), riwayat.filter(e => e.type === "jual" && e.pay === "bon").map(e => e.nama || "")).forEach(n => {
+      n = String(n || "").trim(); const k = n.toLowerCase();
+      if(n && !seen[k]){ seen[k] = 1; out.push(n); }
+    });
+    return out;
+  }
+  function canonNama(nm){
+    nm = String(nm).trim().replace(/\s+/g, " "); const k = nm.toLowerCase();
+    const f = namaBonSemua().find(x => x.toLowerCase() === k);
+    if(f) return f;
+    pelanggan.unshift(nm); pelanggan = pelanggan.slice(0, 200);
+    return nm;
+  }
+
+  // --- piutang ---
+  function grupPiutang(){
+    const hariIni = riwayat.filter(e => e.type === "jual" && e.pay === "bon" && !e.lunas).map(e => ({t:e.t, nama:e.nama || "-", items:e.items, total:e.total, baru:true}));
+    const semua = piutang.map(b => Object.assign({}, b, {baru:false})).concat(hariIni), g = {};
+    semua.forEach(b => { const k = b.nama.trim().toLowerCase(); (g[k] = g[k] || {nama:b.nama, list:[]}).list.push(b); });
+    return Object.keys(g).map(k => { const x = g[k]; x.list.sort((a, b) => a.t - b.t); x.total = x.list.reduce((a, b) => a + b.total, 0); return x; }).sort((a, b) => a.list[0].t - b.list[0].t);
+  }
+  function prosesBayar(t, metode){
+    const e = riwayat.find(x => x.t === t && x.type === "jual" && x.pay === "bon");
+    if(e){
+      if(e.lunas) return null;
+      e.lunas = true;
+      catat({type:"bayarbon", nama:e.nama || "-", items:Object.assign({}, e.items), total:e.total, metode, ref:e.t, baru:true});
+      return e.nama || "-";
+    }
+    const i = piutang.findIndex(x => x.t === t); if(i < 0) return null;
+    const b = piutang.splice(i, 1)[0];
+    catat({type:"bayarbon", nama:b.nama, items:Object.assign({}, b.items), total:b.total, metode, ref:b.t, baru:false, bon:b});
+    return b.nama;
+  }
+  function bayarBon(t, metode){
+    const n = prosesBayar(t, metode); if(n === null) return;
+    simpanSemua(); rerender(); toast("Pelunasan " + n + " dicatat (" + (metode === "qris" ? "QRIS" : "Tunai") + ")");
+  }
+  function lunasiSemua(i){
+    const g = grupPiutang()[i]; if(!g) return;
+    if(!confirm("Terima pelunasan " + g.nama + " " + rp(g.total) + " lewat " + (metodeBayar === "qris" ? "QRIS" : "Tunai") + "?")) return;
+    g.list.forEach(b => prosesBayar(b.t, metodeBayar));
+    simpanSemua(); rerender(); toast("Semua bon " + g.nama + " lunas");
+  }
+  function batalBayar(tEv){
+    const ev = riwayat.find(x => x.t === tEv && x.type === "bayarbon"); if(!ev) return;
+    if(!confirm("Batalkan pelunasan " + ev.nama + " " + rp(ev.total) + "? Bon kembali jadi belum lunas.")) return;
+    if(ev.baru){ const b = riwayat.find(x => x.t === ev.ref && x.type === "jual"); if(b) b.lunas = false; }
+    else if(ev.bon && !piutang.some(x => x.t === ev.bon.t)) piutang.push(ev.bon);
+    riwayat = riwayat.filter(x => x !== ev);
+    simpanSemua(); rerender(); toast("Pelunasan dibatalkan");
+  }
+  function batalLunasBaru(tBon){
+    const ev = riwayat.find(x => x.type === "bayarbon" && x.baru && x.ref === tBon);
+    if(ev){ batalBayar(ev.t); return; }
+    const b = riwayat.find(x => x.t === tBon && x.type === "jual");
+    if(b){ b.lunas = false; simpanSemua(); rerender(); }
+  }
+  function hapusPiutang(t){
+    const i = piutang.findIndex(x => x.t === t); if(i < 0) return;
+    const b = piutang[i], ket = b.nama + " · " + itemsText(b.items) + " · " + rp(b.total);
+    if(!confirm("Hapus bon lama ini?\n" + ket + "\nPakai ini hanya jika bon salah catat.")) return;
+    piutang.splice(i, 1);
+    catat({type:"batal", ket:"Bon lama dihapus: " + ket});
+    rerender(); toast("Bon dihapus");
+  }
+  function setMetode(m){ metodeBayar = m; rerender(); }
+  function htmlPiutang(){
+    const G = grupPiutang(), tot = G.reduce((a, g) => a + g.total, 0), skrg = Date.now();
+    const mb = (m, lbl) => `<button class="${metodeBayar === m ? "on" : ""}" onclick="setMetode('${m}')">${lbl}</button>`;
+    let h = `<p class="hint">Bon yang belum lunas tetap tersimpan walau sudah ganti hari. Saat pelanggan membayar, tekan <b>Lunas</b>; uangnya otomatis masuk laporan hari itu.</p>` +
+      `<div class="sum"><div><b>${G.length}</b><small>pelanggan</small></div><div><b>${rp(tot)}</b><small>total piutang</small></div></div>` +
+      `<label>Pelunasan diterima lewat:</label><div class="seg" style="margin-top:6px">${mb("cash", "💵 Tunai")}${mb("qris", "QRIS")}</div>`;
+    if(!G.length) return h + `<p class="empty-ln">Tidak ada bon yang belum lunas. 🎉</p>`;
+    G.forEach((g, i) => {
+      const tua = Math.floor((skrg - g.list[0].t) / 86400000), kd = tglKey(g.list[0].t);
+      h += `<div class="rcard"><div class="ln tot2" style="border:0"><span>${esc(g.nama)}</span><span>${rp(g.total)}</span></div>` +
+        `<p class="qm">${g.list.length} bon · tertua ${fmtPendek(kd)}${tua > 0 ? " (" + tua + " hari lalu)" : " (hari ini)"}</p>` +
+        g.list.map(b => `<div class="bonrow"><div class="bl"><b>${fmtPendek(tglKey(b.t))}${b.baru ? " · hari ini" : ""}</b><small>${itemsText(b.items)}</small></div>` +
+          `<div class="br"><b>${rp(b.total)}</b><button onclick="bayarBon(${b.t},'${metodeBayar}')">✔ Lunas</button>${b.baru ? "" : `<button class="del" onclick="hapusPiutang(${b.t})">Hapus</button>`}</div></div>`).join("") +
+        (g.list.length > 1 ? `<button class="done" style="margin-top:10px" onclick="lunasiSemua(${i})">✔ Lunasi semua · ${rp(g.total)}</button>` : "") + `</div>`;
+    });
+    return h;
+  }
+
+  // --- arsip & rekap ---
+  const FIELD_HARI = ["omzet", "cup", "trx", "tunai", "qris", "bon", "pinjam", "keluar", "pelT", "pelQ"];
+  function kosongHari(d){ return {d, omzet:0, cup:0, trx:0, tunai:0, qris:0, bon:0, pinjam:0, keluar:0, pelT:0, pelQ:0, menu:{}, jam:{}}; }
+  function gabungHari(a, b){
+    const r = kosongHari(a.d);
+    [a, b].forEach(x => {
+      FIELD_HARI.forEach(f => { r[f] += x[f] || 0; });
+      ["menu", "jam"].forEach(mp => Object.keys(x[mp] || {}).forEach(k => { r[mp][k] = (r[mp][k] || 0) + x[mp][k]; }));
+    });
+    return r;
+  }
+  function ringkasRiwayat(){
+    const M = {}, get = ms => { const k = tglKey(ms); return M[k] || (M[k] = kosongHari(k)); }, evBaru = {};
+    riwayat.forEach(e => { if(e.type === "bayarbon" && e.baru) evBaru[e.ref] = e.metode; });
+    riwayat.forEach(e => {
+      if(e.type === "jual"){
+        const h = get(e.t), q = rupiahCup(e.items).q;
+        h.omzet += e.total; h.cup += q; h.trx++;
+        Object.keys(e.items).forEach(id => { h.menu[id] = (h.menu[id] || 0) + e.items[id]; });
+        const jam = new Date(e.t).getHours(); h.jam[jam] = (h.jam[jam] || 0) + q;
+        if(e.pay === "qris") h.qris += e.total;
+        else if(e.pay === "bon"){ if(e.lunas){ if(evBaru[e.t] === "qris") h.qris += e.total; else h.tunai += e.total; } else h.bon += e.total; }
+        else h.tunai += e.total;
+      } else if(e.type === "pinjam") get(e.t).pinjam += e.jml;
+      else if(e.type === "keluar") get(e.t).keluar += e.jml;
+      else if(e.type === "bayarbon" && !e.baru){ const h = get(e.t); if(e.metode === "qris") h.pelQ += e.total; else h.pelT += e.total; }
+    });
+    return Object.keys(M).map(k => M[k]);
+  }
+  function arsipkanRiwayat(){
+    ringkasRiwayat().forEach(h => {
+      const i = arsip.findIndex(x => x.d === h.d);
+      if(i >= 0) arsip[i] = gabungHari(arsip[i], h); else arsip.push(h);
+    });
+    arsip.sort((a, b) => a.d < b.d ? -1 : 1);
+    if(arsip.length > 400) arsip = arsip.slice(-400);
+  }
+  function semuaHari(){
+    const M = {};
+    arsip.concat(ringkasRiwayat()).forEach(h => { M[h.d] = gabungHari(M[h.d] || kosongHari(h.d), h); });
+    return Object.keys(M).map(k => M[k]).sort((a, b) => a.d < b.d ? -1 : 1);
+  }
+  function jumlahHari(list){
+    const r = kosongHari("");
+    list.forEach(h => { FIELD_HARI.forEach(f => { r[f] += h[f] || 0; }); Object.keys(h.menu || {}).forEach(k => { r.menu[k] = (r.menu[k] || 0) + h.menu[k]; }); Object.keys(h.jam || {}).forEach(k => { r.jam[k] = (r.jam[k] || 0) + h.jam[k]; }); });
+    return r;
+  }
+  function topMenu(map, n){
+    return Object.keys(map).map(id => ({id, q:map[id]})).filter(x => x.q > 0).sort((a, b) => b.q - a.q).slice(0, n);
+  }
+  function setRekap(r){ rekapRange = r; rerender(); }
+  function htmlRekap(){
+    const hari = semuaHari(), mon = mondayKey(tglKey(Date.now()));
+    const batas = rekapRange === "minggu" ? mon : rekapRange === "bulan" ? addDays(mon, -21) : "0000-00-00";
+    const dlm = hari.filter(h => h.d >= batas), T = jumlahHari(dlm);
+    const rb = (r, lbl) => `<button class="${rekapRange === r ? "on" : ""}" onclick="setRekap('${r}')">${lbl}</button>`;
+    let h = `<div class="seg">${rb("minggu", "Minggu ini")}${rb("bulan", "4 Minggu")}${rb("semua", "Semua")}</div>`;
+    if(!dlm.length) h += `<p class="empty-ln">Belum ada data penjualan pada periode ini. Data masuk ke sini saat ada penjualan, dan diarsipkan tiap kali "Mulai Hari Baru".</p>`;
+    else {
+      h += `<div class="sum"><div><b>${T.cup}</b><small>cup terjual</small></div><div><b>${rp(T.omzet)}</b><small>omzet</small></div></div>` +
+        `<p class="qm" style="text-align:center">${dlm.length} hari jualan · rata-rata ${rp(Math.round(T.omzet / dlm.length))}/hari · ${T.trx} transaksi</p>`;
+      const tm = topMenu(T.menu, 8), mx = tm.length ? tm[0].q : 1;
+      h += `<div class="rcard"><h4>🏆 Menu terlaris</h4>` + tm.map((x, i) => `<div class="bar"><span class="nm">${i + 1}. ${esc(namaMenu(x.id))}</span><span class="tr"><span class="fl" style="display:block;width:${Math.max(4, Math.round(x.q / mx * 100))}%"></span></span><span class="vl">${x.q}</span></div>`).join("") + `</div>`;
+      const jk = Object.keys(T.jam).map(Number).filter(k => T.jam[k] > 0);
+      if(jk.length){
+        const lo = Math.min.apply(null, jk), hi = Math.max.apply(null, jk), jmx = Math.max.apply(null, jk.map(k => T.jam[k]));
+        let cols = "";
+        for(let j = lo; j <= hi; j++){ const v = T.jam[j] || 0; cols += `<div class="col${v === jmx ? " top" : ""}"><span>${v || ""}</span><div class="b" style="height:${v ? Math.max(4, Math.round(v / jmx * 80)) : 2}px"></div><small>${pad2(j)}</small></div>`; }
+        const puncak = jk.filter(k => T.jam[k] === jmx)[0];
+        h += `<div class="rcard"><h4>⏰ Jam ramai</h4><p class="qm">Paling ramai sekitar jam ${pad2(puncak)}.00 (${jmx} cup). Angka di atas batang = jumlah cup.</p><div class="hours">${cols}</div></div>`;
+      }
+    }
+    // arsip per minggu
+    const W = {}; hari.forEach(x => { const k = mondayKey(x.d); (W[k] = W[k] || []).push(x); });
+    const keys = Object.keys(W).sort().reverse();
+    h += `<h4 class="stat-h" style="margin-top:16px">🗂 Arsip per minggu</h4>`;
+    if(!keys.length) h += `<p class="empty-ln">Belum ada arsip.</p>`;
+    keys.forEach(k => {
+      const J = jumlahHari(W[k]), top = topMenu(J.menu, 3).map(x => namaMenu(x.id) + " (" + x.q + ")").join(", ");
+      const ln = (a, b) => `<div class="ln"><span>${a}</span><span>${b}</span></div>`;
+      h += `<details class="wk"${k === mon ? " open" : ""}><summary>${rentangMinggu(k)}${k === mon ? " · minggu ini" : ""}<small>${J.cup} cup · ${rp(J.omzet)}</small></summary>` +
+        W[k].map(x => `<div class="ln dayrow"><span>${fmtHari(x.d)} · ${x.cup} cup</span><span>${rp(x.omzet)}</span></div>`).join("") +
+        `<div class="grp">Rincian minggu</div>` +
+        ln("Tunai", rp(J.tunai)) + ln("QRIS", rp(J.qris)) + ln("Bon baru (belum lunas)", rp(J.bon)) + ln("Pinjaman", rp(J.pinjam)) + ln("Pengeluaran", rp(J.keluar)) +
+        ((J.pelT + J.pelQ) ? ln("Pelunasan bon lama", rp(J.pelT + J.pelQ)) : "") +
+        (top ? `<p class="qm" style="margin-top:8px">Terlaris: ${esc(top)}</p>` : "") +
+        `<button class="done" onclick="salinMinggu('${k}')">📋 Salin rekap minggu ini</button></details>`;
+    });
+    return h;
+  }
+  function teksMinggu(mon){
+    const hs = semuaHari().filter(x => mondayKey(x.d) === mon), J = jumlahHari(hs), o = [];
+    const top = topMenu(J.menu, 3).map(x => namaMenu(x.id) + " (" + x.q + ")").join(", ");
+    o.push("*REKAP MINGGUAN KANA COFFEE*"); o.push("Minggu: " + rentangMinggu(mon)); o.push("");
+    hs.forEach(x => o.push(fmtHari(x.d) + ": " + x.cup + " cup - " + rp(x.omzet)));
+    o.push(""); o.push("*TOTAL*");
+    o.push("Cup terjual: " + J.cup); o.push("Omzet: " + rp(J.omzet));
+    o.push("Tunai: " + rp(J.tunai)); o.push("QRIS: " + rp(J.qris)); o.push("Bon baru (belum lunas): " + rp(J.bon));
+    o.push("Pinjaman: " + rp(J.pinjam)); o.push("Pengeluaran: " + rp(J.keluar));
+    if(J.pelT + J.pelQ) o.push("Pelunasan bon lama: " + rp(J.pelT + J.pelQ) + " (tunai " + rp(J.pelT) + ", QRIS " + rp(J.pelQ) + ")");
+    if(top) o.push("Menu terlaris: " + top);
+    return o.join("\n");
+  }
+  function salinTeks(t, pesan){
+    const ok = () => toast(pesan);
+    const cadangan = () => {
+      const ta = document.createElement("textarea"); ta.value = t; ta.style.cssText = "position:fixed;opacity:0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); ok(); } catch(e){ toast("Gagal menyalin"); }
+      document.body.removeChild(ta);
+    };
+    if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(ok, cadangan); else cadangan();
+  }
+  function salinMinggu(mon){ salinTeks(teksMinggu(mon), "Rekap minggu disalin"); }
 
   function rupiahCup(map){
     let q = 0, v = 0;
@@ -688,7 +1036,11 @@
     refreshAll(); toast(operMode === "terima" ? "Stok dari " + nama + " diterima" : "Stok ke " + nama + " dicatat");
   }
   function resetHari(){
-    if(!confirm("Mulai hari baru? Riwayat, bon, pinjaman, pengeluaran, dan laporan hari ini akan dihapus. Stok yang tersisa tetap ada. Pastikan laporan sudah dikirim.")) return;
+    if(!confirm("Mulai hari baru? Penjualan, pinjaman, pengeluaran, dan laporan hari ini akan ditutup dan diarsipkan ke tab Rekap. Bon yang belum lunas dipindah ke tab Piutang dan tetap tersimpan. Stok yang tersisa tetap ada. Pastikan laporan sudah dikirim.")) return;
+    arsipkanRiwayat();
+    riwayat.filter(e => e.type === "jual" && e.pay === "bon" && !e.lunas).forEach(e => {
+      if(!piutang.some(x => x.t === e.t)) piutang.push({t:e.t, nama:e.nama || "-", items:Object.assign({}, e.items), total:e.total});
+    });
     riwayat = []; terjual = {}; qrisManual = null;
     awal = {}; Object.keys(stok).forEach(id => { awal[id] = stok[id]; });
     simpanSemua(); renderStok(); renderMenu();
@@ -708,7 +1060,7 @@
   function tglLaporan(){ return riwayat.length ? new Date(riwayat[0].t) : new Date(); }
 
   function ledger(){
-    const L = {prod:{}, terima:{}, beri:{}, jual:{}, opT:[], opB:[], qris:0, bon:[], pinjam:[], keluar:[]};
+    const L = {pelunasan:[], blTunai:0, blQris:0, prod:{}, terima:{}, beri:{}, jual:{}, opT:[], opB:[], qris:0, bon:[], pinjam:[], keluar:[]};
     const add = (m, it) => Object.keys(it).forEach(id => { m[id] = (m[id] || 0) + it[id]; });
     riwayat.forEach(e => {
       if(e.type === "produksi") add(L.prod, e.items);
@@ -716,6 +1068,10 @@
       else if(e.type === "jual"){ add(L.jual, e.items); if(e.pay === "qris") L.qris += e.total; if(e.pay === "bon") L.bon.push(e); }
       else if(e.type === "pinjam") L.pinjam.push(e);
       else if(e.type === "keluar") L.keluar.push(e);
+      else if(e.type === "bayarbon"){
+        if(e.baru){ if(e.metode === "qris") L.qris += e.total; }
+        else { L.pelunasan.push(e); if(e.metode === "qris") L.blQris += e.total; else L.blTunai += e.total; }
+      }
     });
     return L;
   }
@@ -744,7 +1100,8 @@
     R.N = L.bon.filter(e => !e.lunas).reduce((s, e) => s + e.total, 0);
     R.P = L.pinjam.reduce((s, e) => s + e.jml, 0);
     R.E = L.keluar.reduce((s, e) => s + e.jml, 0);
-    R.X = R.S - R.Q - R.N - R.P - (PENGELUARAN_KURANGI_CASH ? R.E : 0);
+    R.BL = L.blTunai; R.BQ = L.blQris; R.PT = piutang.reduce((a, b) => a + b.total, 0) + R.N;
+    R.X = R.BL + R.S - R.Q - R.N - R.P - (PENGELUARAN_KURANGI_CASH ? R.E : 0);
     R.K = kas; R.TT = R.X + R.K;
     R.belum = MENU.filter(m => awal[m.id] === undefined).map(m => m.name);
     return R;
@@ -770,7 +1127,7 @@
     const r = (label, v, cls) => `<div class="ln ${cls || ""}"><span>${label}</span><span>${rp(v)}</span></div>`;
     return r("Total stok (stok awal + tambah dari rumah)", R.A) + r("+ Stok dari rider lain", R.B) + r("− Stok diberikan ke rider lain", R.C) + r("− Sisa stok", R.D) +
       r("= Nilai stok terjual", R.S, "sum") + r("− QRIS", R.Q) + r("− Bon (belum dibayar)", R.N) + r("− Pinjaman", R.P) +
-      (PENGELUARAN_KURANGI_CASH ? r("− Pengeluaran", R.E) : "") +
+      (PENGELUARAN_KURANGI_CASH ? r("− Pengeluaran", R.E) : "") + (R.BL ? r("+ Pelunasan bon lama (tunai)", R.BL) : "") +
       r("= Uang cash hasil jualan", R.X, "cash" + (R.X < 0 ? " neg" : ""));
   }
   function htmlTotal(R){
@@ -789,7 +1146,10 @@
   function pakaiOtomatis(){ qrisManual = null; simpanSemua(); const el = document.getElementById("qrisIn"); if(el) el.value = ""; updHitung(); }
   function setKas(v){ kas = digits(v); simpanSemua(); updHitung(); }
   function rerender(){ const sb = document.getElementById("sheetBody"), y = sb.scrollTop; renderStok(); sb.scrollTop = y; }
-  function lunasBon(t){ const e = riwayat.find(x => x.t === t); if(e){ e.lunas = !e.lunas; simpanSemua(); rerender(); } }
+  function lunasBon(t){
+    const e = riwayat.find(x => x.t === t && x.type === "jual"); if(!e) return;
+    if(e.lunas) batalLunasBaru(t); else bayarBon(t, "cash");
+  }
   function tambahLap(jenis){
     const ket = document.getElementById("f_" + jenis + "_ket").value.trim(), jml = digits(document.getElementById("f_" + jenis + "_jml").value);
     if(!ket){ toast("Isi keterangan dulu"); return; }
@@ -811,6 +1171,9 @@
       ? L.bon.map(e => `<div class="bonrow${e.lunas ? " lunas" : ""}"><div class="bl"><b>${esc(e.nama || "-")}</b><small>${itemsText(e.items)} · ${rupiahCup(e.items).q} cup</small></div><div class="br"><b>${rp(e.total)}</b><button onclick="lunasBon(${e.t})">${e.lunas ? "↩ Batal lunas" : "✔ Sudah bayar"}</button></div></div>`).join("") +
         `<div class="ln tot"><span>Total bon belum dibayar</span><span>${rp(R.N)}</span></div>`
       : `<p class="empty-ln">Tidak ada bon. Catat bon lewat kasir dengan memilih Bon.</p>`;
+    const pelHtml = L.pelunasan.length
+      ? `<div class="grp">Pelunasan bon lama hari ini</div>` + L.pelunasan.map(e => `<div class="ln"><span>${esc(e.nama)} (${e.metode === "qris" ? "QRIS" : "Tunai"})</span><span>${rp(e.total)}</span></div>`).join("") + `<div class="ln tot"><span>Total pelunasan</span><span>${rp(R.BL + R.BQ)}</span></div>`
+      : "";
     document.getElementById("sheetBody").innerHTML =
       (tgl.toDateString() !== new Date().toDateString() ? `<div class="warn">Laporan ini berisi data tanggal ${fmtTgl(tgl)}, bukan hari ini. Jika sudah dikirim, tekan "Mulai Hari Baru" di bawah.</div>` : "") +
       (R.belum.length ? `<div class="warn">Menu belum diisi stok (tidak ikut laporan): ${R.belum.join(", ")}. Isi di tab Stok Awal.</div>` : "") +
@@ -819,9 +1182,9 @@
       `<div class="rcard"><h4>1. Total Stok</h4>${s1}</div>` +
       `<div class="rcard"><h4>2. +/− Stok dari Rider Lain</h4>${bagianOper("Tambah stok dari rider lain", grupOper(L.opT), "Dari")}${bagianOper("Stok diberikan ke rider lain", grupOper(L.opB), "Ke")}</div>` +
       `<div class="rcard"><h4>3. Sisa Seluruh Stok</h4>${s3}</div>` +
-      `<div class="rcard"><h4>4. QRIS</h4><div class="ln tot2"><span>Qris =</span><span id="qrisVal">${rp(R.Q)}</span></div><p class="qm" id="qrisNote">${catQris(R)}</p>
+      `<div class="rcard"><h4>4. QRIS</h4><div class="ln tot2"><span>Qris =</span><span id="qrisVal">${rp(R.Q)}</span></div><p class="qm" id="qrisNote">${catQris(R)}</p>${R.BQ ? `<p class="qm">+ Pelunasan bon lama via QRIS ${rp(R.BQ)} (tidak dihitung ke uang cash).</p>` : ""}
         <input id="qrisIn" inputmode="numeric" placeholder="Koreksi manual (kosongkan = otomatis)" value="${qrisManual === null ? "" : nf(qrisManual)}" oninput="fmtRp(this);setQris(this.value)" autocomplete="off"></div>` +
-      `<div class="rcard"><h4>5. Bon</h4>${bonHtml}</div>` +
+      `<div class="rcard"><h4>5. Bon</h4>${bonHtml}${pelHtml}<div class="ln tot2"><span>Total piutang semua pelanggan</span><span>${rp(R.PT)}</span></div><p class="qm">Kelola pelunasan di tab Piutang.</p></div>` +
       `<div class="rcard"><h4>6. Pinjaman</h4><p class="qm">Uang hasil jualan yang dipakai karyawan.</p>${listLap(L.pinjam, "pinjam", R.P, "Total pinjaman", "mis. beli makan")}</div>` +
       `<div class="rcard"><h4>7. Pengeluaran</h4>${listLap(L.keluar, "keluar", R.E, "Total pengeluaran", "mis. es batu")}</div>` +
       `<div class="rcard calc"><h4>Perhitungan Uang Cash</h4><div id="hitungBox">${htmlHitung(R)}</div>
@@ -864,6 +1227,8 @@
     o.push("*5. BON*");
     if(L.bon.length) L.bon.forEach((e, i) => o.push((i + 1) + ". " + (e.nama || "-") + " - " + itemsText(e.items) + " (" + rupiahCup(e.items).q + " cup) - " + rp(e.total) + (e.lunas ? " [LUNAS]" : ""))); else o.push("-");
     o.push("Total bon belum dibayar " + rp(R.N));
+    if(L.pelunasan.length){ o.push("Pelunasan bon lama:"); L.pelunasan.forEach(e => o.push("- " + e.nama + " (" + (e.metode === "qris" ? "QRIS" : "Tunai") + "): " + rp(e.total))); }
+    o.push("Total piutang semua pelanggan " + rp(R.PT));
     o.push("");
     o.push("*6. PINJAMAN*");
     if(L.pinjam.length) L.pinjam.forEach(e => o.push("- " + e.ket + ": " + rp(e.jml))); else o.push("-");
@@ -883,6 +1248,7 @@
     o.push("- Bon " + rp(R.N));
     o.push("- Pinjaman " + rp(R.P));
     if(PENGELUARAN_KURANGI_CASH) o.push("- Pengeluaran " + rp(R.E));
+    if(R.BL) o.push("+ Pelunasan bon lama (tunai) " + rp(R.BL));
     o.push("= Uang cash hasil jualan " + rp(R.X));
     o.push("+ Uang kas " + rp(R.K));
     o.push("*TOTAL UANG DI TANGAN " + rp(R.TT) + "*");
