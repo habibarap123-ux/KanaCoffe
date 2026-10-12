@@ -166,7 +166,7 @@
   .seg button{flex:1;border:2px solid var(--green);background:#fff;color:var(--green);border-radius:12px;padding:10px 6px;font-weight:700;font-size:14px;cursor:pointer}
   .seg button.on{background:var(--green);color:#fff}
   .sheet label{font-size:13px;font-weight:600;color:#555}
-  #riderName,#editNama{width:100%;font-size:18px;padding:10px 12px;border:2px solid var(--green);border-radius:10px;margin:6px 0 14px;font-family:inherit}
+  #riderName,#editNama,#editRider{width:100%;font-size:18px;padding:10px 12px;border:2px solid var(--green);border-radius:10px;margin:6px 0 14px;font-family:inherit}
   .sheet .done{margin-top:8px}
   .sum{background:var(--green);color:#fff;border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-around;text-align:center}
   .sum b{display:block;font-size:20px;color:var(--gold)}
@@ -596,9 +596,10 @@
 
   let sTab = "saya", operMode = "produksi", draft = {}, namaDraft = "";
   let editT = null, editItems = {}, editPay = "cash", editNama = "";
+  let editStokT = null, editStokItems = {}, editStokJenis = "produksi", editStokRider = "";
   function openStok(t){ if(t) sTab = t; draft = {}; document.getElementById("sheet").classList.add("show"); renderStok(); }
-  function closeStok(){ editT = null; document.getElementById("sheet").classList.remove("show"); }
-  function stokTab(t){ sTab = t; draft = {}; editT = null; renderStok(); document.getElementById("sheetBody").scrollTop = 0; }
+  function closeStok(){ editT = null; editStokT = null; document.getElementById("sheet").classList.remove("show"); }
+  function stokTab(t){ sTab = t; draft = {}; editT = null; editStokT = null; renderStok(); document.getElementById("sheetBody").scrollTop = 0; }
   function setOper(m){ operMode = m; draft = {}; renderStok(); }
 
   function barisStepper(){
@@ -657,6 +658,11 @@
         if(eo){ b.innerHTML = htmlEditor(eo); return; }
         editT = null;
       }
+      if(editStokT !== null){
+        const es = riwayat.find(x => x.t === editStokT && (x.type === "produksi" || x.type === "oper"));
+        if(es){ b.innerHTML = htmlEditorStok(es); return; }
+        editStokT = null;
+      }
       const jual = riwayat.filter(e => e.type === "jual");
       const cup = jual.reduce((s,e) => s + Object.keys(e.items).reduce((a,id) => a + e.items[id], 0), 0);
       const omzet = jual.reduce((s,e) => s + e.total, 0);
@@ -671,8 +677,8 @@
         else if(e.type === "bayarbon") t = `💰 Pelunasan bon ${esc(e.nama)} (${e.metode === "qris" ? "QRIS" : "Tunai"}) · ${itemsText(e.items)} · ${rp(e.total)}${e.baru ? "" : " · bon lama"}`;
         else if(e.type === "keluar") t = `🧾 Pengeluaran · ${esc(e.ket)} · ${rp(e.jml)}`;
         else t = `${e.koreksi ? "✏️ Koreksi stok" : "📦 Stok awal diatur"} · ${itemsText(e.items)}`;
-        if(e.type === "jual" && e.diubah) t += " · <i>(sudah diubah)</i>";
-        const act = e.type === "bayarbon" ? `<div class="logact"><button class="del" onclick="batalBayar(${e.t})">↩ Batalkan pelunasan</button></div>` : e.type === "jual" ? `<div class="logact"><button onclick="mulaiUbah(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanJual(${e.t})">🗑 Batalkan</button></div>` : "";
+        if(e.diubah && e.type !== "batal") t += " · <i>(sudah diubah)</i>";
+        const act = (e.type === "produksi" || e.type === "oper") ? `<div class="logact"><button onclick="mulaiUbahStok(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanStok(${e.t})">🗑 Batalkan</button></div>` : e.type === "bayarbon" ? `<div class="logact"><button class="del" onclick="batalBayar(${e.t})">↩ Batalkan pelunasan</button></div>` : e.type === "jual" ? `<div class="logact"><button onclick="mulaiUbah(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanJual(${e.t})">🗑 Batalkan</button></div>` : "";
         return `<div class="log">${t}<small>${w}</small>${act}</div>`;
       };
       b.innerHTML = `<div class="sum"><div><b>${cup}</b><small>cup terjual</small></div><div><b>${rp(omzet)}</b><small>total penjualan</small></div></div>` +
@@ -967,6 +973,86 @@
   }
   function salinMinggu(mon){ salinTeks(teksMinggu(mon), "Rekap minggu disalin"); }
 
+  // ===== UBAH / BATALKAN CATATAN STOK (dari rumah, terima rider, beri rider) =====
+  function efekStok(e){
+    const sg = (e.type === "produksi" || e.dir === "terima") ? 1 : -1, d = {};
+    Object.keys(e.items).forEach(id => { d[id] = sg * e.items[id]; });
+    return d;
+  }
+  function ringkasStok(e){
+    return (e.type === "produksi" ? "Dari rumah" : e.dir === "terima" ? "Terima dari " + e.rider : "Beri ke " + e.rider) + " · " + itemsText(e.items);
+  }
+  function hitungStokBaru(lama, itemsBaru, jenisBaru){
+    const tmp = Object.assign({}, stok), dLama = efekStok(lama), dBaru = {}, ids = {};
+    const sg = jenisBaru === "beri" ? -1 : 1;
+    Object.keys(itemsBaru).forEach(id => { dBaru[id] = sg * itemsBaru[id]; });
+    Object.keys(dLama).concat(Object.keys(dBaru)).forEach(id => { ids[id] = 1; });
+    const daftar = Object.keys(ids);
+    for(const id of daftar){
+      const v = (tmp[id] || 0) - (dLama[id] || 0) + (dBaru[id] || 0);
+      if(v < 0) return {err:"Sisa " + nameOf(id) + " tidak cukup (kurang " + (-v) + "). Koreksi sisa stok dulu atau kurangi jumlahnya"};
+      if(tmp[id] !== undefined || v > 0) tmp[id] = v;
+    }
+    return {tmp, ids:daftar};
+  }
+  function mulaiUbahStok(t){
+    const e = riwayat.find(x => x.t === t && (x.type === "produksi" || x.type === "oper")); if(!e) return;
+    editT = null; editStokT = t; editStokItems = Object.assign({}, e.items);
+    editStokJenis = e.type === "produksi" ? "produksi" : e.dir; editStokRider = e.rider || "";
+    renderStok(); document.getElementById("sheetBody").scrollTop = 0;
+  }
+  function batalUbahStok(){ editStokT = null; renderStok(); }
+  function updEditStokSum(){ const el = document.getElementById("editStokSum"); if(el) el.innerHTML = isiTotal("Total setelah diubah", editStokItems); }
+  function stepEditStok(id, d){ const v = Math.max(0, (editStokItems[id] || 0) + d); editStokItems[id] = v; document.getElementById("es" + id).value = v; updEditStokSum(); }
+  function setEditStokQ(id, el){
+    const raw = parseInt(el.value.replace(/\D/g, "")) || 0;
+    editStokItems[id] = raw; if(el.value === "") el.value = raw; updEditStokSum();
+  }
+  function setEditStokJenis(j){ editStokJenis = j; rerender(); }
+  function htmlEditorStok(e){
+    const w = new Date(e.t).toLocaleString("id-ID", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
+    const row = m => `<div class="srow"><div class="sn"><b>${m.name}</b><small>Sisa sekarang: ${hasStok(m.id) ? stok[m.id] : 0}</small></div>
+      <div class="step"><button onclick="stepEditStok(${m.id},-1)">−</button><input class="qin" id="es${m.id}" inputmode="numeric" value="${editStokItems[m.id] || 0}" oninput="setEditStokQ(${m.id},this)"><button onclick="stepEditStok(${m.id},1)">+</button></div></div>`;
+    const pb = (j, lbl) => `<button class="${editStokJenis === j ? "on" : ""}" onclick="setEditStokJenis('${j}')">${lbl}</button>`;
+    return `<p class="hint">Ubah catatan stok <b>${w}</b>. Sisa stok otomatis disesuaikan dengan selisihnya. Kalau hanya mengganti Dari Rumah ↔ Terima Rider, sisa stok <b>tidak berubah</b>.</p>` +
+      `<div class="warn">Sebelumnya: ${esc(ringkasStok(e))}</div>` +
+      `<div class="seg">${pb("produksi", "🏭 Dari Rumah")}${pb("terima", "⬇ Terima Rider")}${pb("beri", "⬆ Beri Rider")}</div>` +
+      (editStokJenis !== "produksi" ? `<label for="editRider">${editStokJenis === "terima" ? "Nama rider yang memberi stok" : "Nama rider yang menerima stok"}</label>
+        <input id="editRider" list="riderList" placeholder="Nama rider" value="${esc(editStokRider)}" oninput="editStokRider=this.value" autocomplete="off">
+        <datalist id="riderList">${daftarRider.map(n => `<option value="${esc(n)}">`).join("")}</datalist>` : "") +
+      MENU.map(row).join("") +
+      `<div class="total-box" id="editStokSum">${isiTotal("Total setelah diubah", editStokItems)}</div>` +
+      `<div class="editbtns"><button class="done cancel" onclick="batalUbahStok()">Kembali</button><button class="done" onclick="simpanUbahStok()">Simpan Perubahan</button></div>`;
+  }
+  function simpanUbahStok(){
+    const e = riwayat.find(x => x.t === editStokT && (x.type === "produksi" || x.type === "oper")); if(!e){ editStokT = null; renderStok(); return; }
+    const items = {}; Object.keys(editStokItems).forEach(id => { if(editStokItems[id] > 0) items[id] = editStokItems[id]; });
+    if(!Object.keys(items).length){ toast("Isi minimal 1 cup, atau pakai Batalkan"); return; }
+    const rider = editStokJenis === "produksi" ? "" : editStokRider.trim();
+    if(editStokJenis !== "produksi" && !rider){ toast("Isi nama rider dulu"); return; }
+    const h = hitungStokBaru(e, items, editStokJenis);
+    if(h.err){ toast(h.err); return; }
+    const lama = ringkasStok(e);
+    h.ids.forEach(id => { if(h.tmp[id] !== undefined) stok[id] = h.tmp[id]; if(stok[id] > 0) delete soldOut[id]; });
+    e.items = items;
+    if(editStokJenis === "produksi"){ e.type = "produksi"; delete e.dir; delete e.rider; }
+    else { e.type = "oper"; e.dir = editStokJenis; e.rider = rider; if(!daftarRider.includes(rider)) daftarRider = [rider].concat(daftarRider).slice(0, 20); }
+    e.diubah = true;
+    Object.keys(items).forEach(pastikanAwal);
+    catat({type:"batal", ket:"Diubah: " + lama + " → " + ringkasStok(e)});
+    editStokT = null; refreshAll(); toast("Catatan stok diperbaiki");
+  }
+  function batalkanStok(t){
+    const e = riwayat.find(x => x.t === t && (x.type === "produksi" || x.type === "oper")); if(!e) return;
+    const h = hitungStokBaru(e, {}, "produksi");
+    if(h.err){ toast(h.err); return; }
+    if(!confirm("Batalkan catatan ini?\n" + ringkasStok(e) + "\nSisa stok akan disesuaikan.")) return;
+    h.ids.forEach(id => { if(h.tmp[id] !== undefined) stok[id] = h.tmp[id]; });
+    riwayat = riwayat.filter(x => x !== e);
+    catat({type:"batal", ket:"Dibatalkan: " + ringkasStok(e)});
+    editStokT = null; refreshAll(); toast("Catatan stok dibatalkan");
+  }
+
   function rupiahCup(map){
     let q = 0, v = 0;
     Object.keys(map).forEach(id => { const n = map[id] || 0; q += n; v += n * MENU.find(x => x.id == id).price; });
@@ -1013,6 +1099,7 @@
   function simpanProduksi(){
     const items = itemsDraft();
     if(!Object.keys(items).length){ toast("Isi jumlah dulu"); return; }
+    if(!confirm("Tambah stok DARI RUMAH?\n" + itemsText(items) + "\n\nJika stok ini dari rider lain, pilih Batal lalu pakai tombol ⬇ Terima Rider.")) return;
     Object.keys(items).forEach(id => { stok[id] = (stok[id]||0) + items[id]; delete soldOut[id]; });
     catat({type:"produksi", items}); draft = {};
     Object.keys(items).forEach(pastikanAwal);
