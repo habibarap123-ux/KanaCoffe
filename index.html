@@ -286,7 +286,7 @@
     <button class="stok-btn" onclick="openStok()" aria-label="Kelola Stok" title="Kelola Stok">📦</button>
     <button class="cart-btn" onclick="toggleCart()" aria-label="Keranjang">🛒<span id="count">0</span></button>
   </div>
-  <div class="riderbar" id="riderbar"><span>MODE RIDER aktif</span><button onclick="openStok()">📦 Kelola Stok</button><button onclick="openStok('lap')">📋 Laporan</button><button onclick="openStok('piutang')">📒 Piutang</button><button onclick="toggleRider()">Keluar</button></div>
+  <div class="riderbar" id="riderbar"><span>MODE RIDER aktif</span><button onclick="openStok()">📦 Kelola Stok</button><button onclick="openStok('lap')">📋 Laporan</button><button onclick="openStok('piutang')">📒 Piutang</button><button onclick="kirimSisaWA()">📲 Kirim Sisa</button><button onclick="toggleRider()">Keluar</button></div>
 </header>
 
 <section class="hero" id="home">
@@ -1263,6 +1263,37 @@
       document.body.removeChild(ta);
     };
     if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(ok, cadangan); else cadangan();
+  }
+  function teksSisa(){
+    const R = susunLaporan(), now = new Date();
+    const rows = R.sisa.map(r => ({n:r.m.name, q:String(r.q), p:hargaK(r.m.price), t:nf(r.q * r.m.price)}));
+    const lebar = k => rows.reduce((a, r) => Math.max(a, r[k].length), 1);
+    const wq = lebar("q"), wp = lebar("p"), wt = lebar("t"), blok = [];
+    rows.forEach(r => { blok.push(r.n); blok.push("  " + r.q.padStart(wq) + " x " + r.p.padStart(wp) + " = " + r.t.padStart(wt)); });
+    if(!rows.length) blok.push("-");
+    const tot = ["Total sisa : " + R.cupD + " cup", "Total uang : " + rp(R.D)];
+    const garis = "-".repeat(Math.max.apply(null, blok.concat(tot).map(x => x.length)));
+    return [
+      "*LAPORAN SISA STOK KANA COFFEE*",
+      "Hari: " + now.toLocaleDateString("id-ID", {weekday:"long"}),
+      "Tanggal: " + now.toLocaleDateString("id-ID", {day:"numeric", month:"long", year:"numeric"}),
+      "Jam: " + now.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", "."),
+      "Nama: " + (namaRider.trim() || "-"),
+      "",
+      "*SISA STOK*",
+      "```\n" + blok.concat([garis], tot).join("\n") + "\n```"
+    ].join("\n");
+  }
+  let namaDitanya = false;
+  function kirimSisaWA(){
+    if(!namaRider.trim() && !namaDitanya){
+      const n = prompt("Nama karyawan untuk laporan sisa stok:", "");
+      if(n === null) return;
+      namaDitanya = true; namaRider = n.trim(); simpanSemua();
+      toast("Tekan Kirim Sisa sekali lagi untuk mengirim");
+      return;
+    }
+    window.open("https://wa.me/?text=" + encodeURIComponent(teksSisa()), "_blank");
   }
   function kirimWA(){ window.open("https://wa.me/?text=" + encodeURIComponent(teksLaporan()), "_blank"); }
 
