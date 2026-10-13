@@ -634,7 +634,8 @@
   let stok = muat("kana_stok", {}), terjual = muat("kana_terjual", {}), riwayat = muat("kana_riwayat", []), daftarRider = muat("kana_riders", []);
   let awal = muat("kana_awal", {}), kas = muat("kana_kas", 100000), namaRider = muat("kana_nama", ""), qrisManual = muat("kana_qrisManual", null);
   let piutang = muat("kana_piutang", []), arsip = muat("kana_arsip", []), pelanggan = muat("kana_pelanggan", []);
-  function simpanSemua(){ simpan("kana_stok", stok); simpan("kana_terjual", terjual); simpan("kana_riwayat", riwayat); simpan("kana_riders", daftarRider); simpan("kana_soldout", soldOut); simpan("kana_awal", awal); simpan("kana_kas", kas); simpan("kana_nama", namaRider); simpan("kana_qrisManual", qrisManual); simpan("kana_piutang", piutang); simpan("kana_arsip", arsip); simpan("kana_pelanggan", pelanggan); }
+  let rekapCut = muat("kana_rekapCut", 0);
+  function simpanSemua(){ simpan("kana_rekapCut", rekapCut); simpan("kana_stok", stok); simpan("kana_terjual", terjual); simpan("kana_riwayat", riwayat); simpan("kana_riders", daftarRider); simpan("kana_soldout", soldOut); simpan("kana_awal", awal); simpan("kana_kas", kas); simpan("kana_nama", namaRider); simpan("kana_qrisManual", qrisManual); simpan("kana_piutang", piutang); simpan("kana_arsip", arsip); simpan("kana_pelanggan", pelanggan); }
   function hasStok(id){ return stok[id] !== undefined; }
   function isSold(id){ return !!soldOut[id] || (hasStok(id) && stok[id] <= 0); }
   function left(id){ return hasStok(id) ? stok[id] : Infinity; }
@@ -979,6 +980,7 @@
     const M = {}, get = ms => { const k = tglKey(ms); return M[k] || (M[k] = kosongHari(k)); }, evBaru = {};
     riwayat.forEach(e => { if(e.type === "bayarbon" && e.baru) evBaru[e.ref] = e.metode; });
     riwayat.forEach(e => {
+      if(e.t <= rekapCut) return;
       if(e.type === "jual"){
         const h = get(e.t), q = rupiahCup(e.items).q;
         h.omzet += e.total; h.cup += q; h.trx++;
@@ -1065,7 +1067,12 @@
         (top ? `<p class="qm" style="margin-top:8px">Terlaris: ${esc(top)}</p>` : "") +
         `<button class="done" onclick="salinMinggu('${k}')">📋 Salin rekap minggu ini</button></details>`;
     });
+    h += `<button class="reset" onclick="resetRekap()">🗑 Reset Rekap</button><p class="qm" style="text-align:center">Menghapus semua arsip rekap. Laporan hari ini, stok, dan piutang tidak ikut terhapus.</p>`;
     return h;
+  }
+  function resetRekap(){
+    if(!confirm("Reset rekap? Semua data di tab Rekap (arsip mingguan, menu terlaris, jam ramai) akan dihapus dan mulai dari nol. Laporan hari ini, stok, dan piutang TIDAK terhapus. Tidak bisa dibatalkan.")) return;
+    arsip = []; rekapCut = Date.now(); simpanSemua(); rerender(); toast("Rekap direset");
   }
   function teksMinggu(mon){
     const hs = semuaHari().filter(x => mondayKey(x.d) === mon), J = jumlahHari(hs), o = [];
@@ -1465,16 +1472,16 @@
       `<div class="rcard"><h4>1. Total Stok</h4>${s1}</div>` +
       `<div class="rcard"><h4>2. +/− Stok dari Rider Lain</h4>${bagianOper("Tambah stok dari rider lain", grupOper(L.opT), "Dari")}${bagianOper("Stok diberikan ke rider lain", grupOper(L.opB), "Ke")}</div>` +
       `<div class="rcard"><h4>3. Sisa Seluruh Stok</h4>${s3}</div>` +
+      (() => { const rt = rowsTerjual(L), cp = rt.reduce((a, r) => a + r.q, 0);
+        return `<div class="rcard"><h4>📊 Cup Terjual</h4><p class="qm">Penjualan lewat kasir (tunai, QRIS, bon).</p>` +
+          (rt.length ? rt.map(r => baris(r.m, r.q)).join("") + `<div class="ln tot"><span>Total ${cp} cup</span><span>${rp(R.rec)}</span></div>` : `<p class="empty-ln">Belum ada penjualan.</p>`) +
+          `</div>`; })() +
       `<div class="rcard"><h4>4. QRIS</h4><div class="ln tot2"><span>Qris =</span><span id="qrisVal">${rp(R.Q)}</span></div><p class="qm" id="qrisNote">${catQris(R)}</p><div id="qrisDetail">${rincianQris(R)}</div>
         <input id="qrisIn" inputmode="numeric" placeholder="Koreksi manual (kosongkan = otomatis)" value="${qrisManual === null ? "" : nf(qrisManual)}" oninput="fmtRp(this);setQris(this.value)" autocomplete="off"></div>` +
       `<div class="rcard"><h4>5. Bon</h4>${bonHtml}${pelHtml}<div class="ln tot2"><span>Total piutang semua pelanggan</span><span>${rp(R.PT)}</span></div><p class="qm">Kelola pelunasan di tab Piutang.</p></div>` +
       `<div class="rcard"><h4>6. Pinjaman</h4><p class="qm">Uang hasil jualan yang dipakai karyawan.</p>${listLap(L.pinjam, "pinjam", R.P, "Total pinjaman", "mis. beli makan")}</div>` +
       `<div class="rcard"><h4>7. Pengeluaran</h4>${listLap(L.keluar, "keluar", R.E, "Total pengeluaran", "mis. es batu")}</div>` +
       pbrCard("8", "Promo", "promo", R) + pbrCard("9", "Bonus", "bonus", R) + pbrCard("10", "Barang Rusak / Cacat Produk", "rusak", R) +
-      (() => { const rt = rowsTerjual(L), cp = rt.reduce((a, r) => a + r.q, 0);
-        return `<div class="rcard"><h4>📊 Cup Terjual</h4><p class="qm">Penjualan lewat kasir (tunai, QRIS, bon).</p>` +
-          (rt.length ? rt.map(r => baris(r.m, r.q)).join("") + `<div class="ln tot"><span>Total ${cp} cup</span><span>${rp(R.rec)}</span></div>` : `<p class="empty-ln">Belum ada penjualan.</p>`) +
-          `</div>`; })() +
       `<div class="rcard calc"><h4>Perhitungan Uang Cash</h4><div id="hitungBox">${htmlHitung(R)}</div>
         <div class="ln kasrow"><span>+ Uang kas (modal kembalian)</span><span><input id="kasIn" inputmode="numeric" value="${nf(kas)}" oninput="fmtRp(this);setKas(this.value)" autocomplete="off"></span></div>
         <div id="totalBox">${htmlTotal(R)}</div></div>` +
@@ -1535,6 +1542,11 @@
     { const it = R.sisa.length ? menuRows(R.sisa.map(r => [r.m, r.q])) : [dash];
       it.push({b:"Total sisa " + R.cupD + " cup"}, {b:"Total uang " + rp(R.D)});
       sec("3. SISA STOK", it); }
+    // cup terjual
+    { const rt = rowsTerjual(L), cp = rt.reduce((x, r) => x + r.q, 0);
+      const it = rt.length ? menuRows(rt.map(r => [r.m, r.q])) : [dash];
+      if(rt.length) it.push({b:"Total " + cp + " cup"}, {b:"Nilai " + rp(R.rec)});
+      sec("CUP TERJUAL (KASIR)", it); }
     // 4
     { const it = [{b:"Qris = " + rp(R.Q)}];
       const ql = L.qrisList.slice().sort((a, b) => a.t - b.t), lama = L.pelunasan.filter(e => e.metode === "qris");
@@ -1577,11 +1589,6 @@
     pbrTxt("8", "PROMO", "promo", R.PRc, R.PRn);
     pbrTxt("9", "BONUS", "bonus", R.BOc, R.BOn);
     pbrTxt("10", "BARANG RUSAK / CACAT PRODUK", "rusak", R.RUc, R.RUn);
-    // cup terjual
-    { const rt = rowsTerjual(L), cp = rt.reduce((x, r) => x + r.q, 0);
-      const it = rt.length ? menuRows(rt.map(r => [r.m, r.q])) : [dash];
-      if(rt.length) it.push({b:"Total " + cp + " cup"}, {b:"Nilai " + rp(R.rec)});
-      sec("CUP TERJUAL (KASIR)", it); }
     // hitung uang cash (angka dalam Rp, tanpa tulisan "Rp" supaya muat satu baris)
     { const k1 = [["Total stok", rpPlain(R.A)], ["+ Dari rider", rpPlain(R.B)], ["- Ke rider", rpPlain(R.C)], ["- Sisa stok", rpPlain(R.D)]];
       const k2 = [["- Qris", rpPlain(R.Q)], ["- Bon", rpPlain(R.N)], ["- Pinjaman", rpPlain(R.P)]];
