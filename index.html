@@ -1436,80 +1436,90 @@
   }
 
   function teksLaporan(){
-    const R = susunLaporan(), L = R.L, o = [];
-    const bar = (m, q) => m.name + " " + barisHarga(m, q);
-    const opr = (judul, g, kata) => {
-      o.push(judul);
-      if(!g.length){ o.push("-"); return; }
-      g.forEach(x => { o.push(kata + " " + x.rider + ":"); urut(x.items).forEach(id => o.push(bar(produk(id), x.items[id]))); });
+    const R = susunLaporan(), L = R.L, now = new Date(), o = [];
+    const cb = lines => "```\n" + lines.join("\n") + "\n```";
+    const sec = (judul, lines) => { o.push("*" + judul + "*"); o.push(cb(lines)); o.push(""); };
+    const garisDari = ls => "-".repeat(Math.max.apply(null, ls.map(x => x.length).concat([8])));
+    // blok menu: nama di baris sendiri, lalu "  q x harga = total" rata kolom
+    const menuRows = (pairs, tail) => {
+      const rows = pairs.map(([m, q]) => ({n:m.name, q:String(q), p:hargaK(m.price), t:nf(q * m.price)}));
+      const lb = k => rows.reduce((x, r) => Math.max(x, r[k].length), 1);
+      const wq = lb("q"), wp = lb("p"), wt = lb("t"), out = [];
+      rows.forEach(r => { out.push(r.n); out.push("  " + r.q.padStart(wq) + " x " + r.p.padStart(wp) + " = " + r.t.padStart(wt)); });
+      if(!rows.length) out.push("-");
+      if(tail && tail.length){ out.push(garisDari(out.concat(tail))); tail.forEach(x => out.push(x)); }
+      return out;
+    };
+    const pairsOf = items => urut(items).map(id => [produk(id), items[id]]);
+    // blok dua kolom: label kiri, nilai kanan
+    const kv = (list, garisSebelum) => {
+      const wl = list.reduce((x, r) => Math.max(x, r[0].length), 1), wv = list.reduce((x, r) => Math.max(x, r[1].length), 1), out = [];
+      list.forEach(r => { if(garisSebelum && garisSebelum.indexOf(r[0]) >= 0) out.push("-".repeat(wl + wv + 2)); out.push(r[0].padEnd(wl) + "  " + r[1].padStart(wv)); });
+      return out;
     };
     o.push("*LAPORAN HARIAN KANA COFFEE*");
+    o.push("Hari: " + tglLaporan().toLocaleDateString("id-ID", {weekday:"long"}));
     o.push("Tanggal: " + fmtTgl(tglLaporan()));
+    o.push("Jam kirim: " + now.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", "."));
     o.push("Karyawan: " + (namaRider.trim() || "-"));
     o.push("");
-    o.push("*1. TOTAL STOK*");
-    if(R.rowsStok.length) R.rowsStok.forEach(r => o.push(bar(r.m, r.q) + (r.pr ? " (stok awal " + r.aw + " + tambah dari rumah " + r.pr + ")" : ""))); else o.push("-");
-    o.push("Total " + R.cupA + " cup = " + rp(R.A));
-    o.push("");
-    o.push("*2. +/- STOK (OPER RIDER)*");
-    opr("Tambah stok dari rider lain:", grupOper(L.opT), "Dari");
-    if(L.opT.length) o.push("Total " + R.cupB + " cup = " + rp(R.B));
-    opr("Diberikan ke rider lain:", grupOper(L.opB), "Ke");
-    if(L.opB.length) o.push("Total " + R.cupC + " cup = " + rp(R.C));
-    o.push("");
-    o.push("*3. SISA STOK*");
-    if(R.sisa.length) R.sisa.forEach(r => o.push(bar(r.m, r.q))); else o.push("-");
-    o.push("Total sisa " + R.cupD + " cup");
-    o.push("Total uang " + rp(R.D));
-    o.push("");
-    o.push("*4. QRIS*");
-    o.push("Qris = " + rp(R.Q) + (qrisManual !== null ? " (diubah manual, dari kasir " + rp(R.qrisAuto) + ")" : ""));
-    o.push("");
-    o.push("*5. BON*");
-    if(L.bon.length) L.bon.forEach((e, i) => o.push((i + 1) + ". " + (e.nama || "-") + " - " + itemsText(e.items) + " (" + rupiahCup(e.items).q + " cup) - " + rp(e.total) + (e.lunas ? " [LUNAS]" : ""))); else o.push("-");
-    o.push("Total bon belum dibayar " + rp(R.N));
-    if(L.pelunasan.length){ o.push("Pelunasan bon lama:"); L.pelunasan.forEach(e => o.push("- " + e.nama + " (" + (e.metode === "qris" ? "QRIS" : "Tunai") + "): " + rp(e.total))); }
-    o.push("Total piutang semua pelanggan " + rp(R.PT));
-    o.push("");
-    o.push("*6. PINJAMAN*");
-    if(L.pinjam.length) L.pinjam.forEach(e => o.push("- " + e.ket + ": " + rp(e.jml))); else o.push("-");
-    o.push("Total " + rp(R.P));
-    o.push("");
-    o.push("*7. PENGELUARAN*");
-    if(L.keluar.length) L.keluar.forEach(e => o.push("- " + e.ket + ": " + rp(e.jml))); else o.push("-");
-    o.push("Total " + rp(R.E));
-    o.push("");
+    // 1
+    { const ls = menuRows(R.rowsStok.map(r => [r.m, r.q]), ["Total stok : " + R.cupA + " cup", "Total uang : " + rp(R.A)]);
+      const ket = R.rowsStok.filter(r => r.pr).reduce((x, r) => x.concat([r.m.name, "  awal " + r.aw + " + rumah " + r.pr]), []);
+      sec("1. TOTAL STOK", ket.length ? ls.concat(["", "Rincian:"], ket) : ls); }
+    // 2
+    { const ls = [];
+      const grp = (judul, g, kata, cup, nilai) => {
+        ls.push(judul);
+        if(!g.length){ ls.push("-"); return; }
+        g.forEach(x => { ls.push(kata + " " + x.rider + ":"); menuRows(pairsOf(x.items)).forEach(l => ls.push(l)); });
+        ls.push("Total " + cup + " cup = " + rp(nilai));
+      };
+      grp("Tambah dari rider lain:", grupOper(L.opT), "Dari", R.cupB, R.B); ls.push("");
+      grp("Diberikan ke rider lain:", grupOper(L.opB), "Ke", R.cupC, R.C);
+      sec("2. +/- STOK (OPER RIDER)", ls); }
+    // 3
+    sec("3. SISA STOK", menuRows(R.sisa.map(r => [r.m, r.q]), ["Total sisa : " + R.cupD + " cup", "Total uang : " + rp(R.D)]));
+    // 4
+    sec("4. QRIS", ["Qris = " + rp(R.Q)].concat(qrisManual !== null ? ["(diubah manual, dari kasir " + rp(R.qrisAuto) + ")"] : []));
+    // 5
+    { const ls = [];
+      if(L.bon.length) L.bon.forEach((e, i) => { ls.push((i + 1) + ". " + (e.nama || "-") + (e.lunas ? " [LUNAS]" : "")); menuRows(pairsOf(e.items)).forEach(l => ls.push("   " + l)); ls.push("   Total " + rupiahCup(e.items).q + " cup = " + rp(e.total)); });
+      else ls.push("-");
+      ls.push(garisDari(ls)); ls.push("Bon belum lunas : " + rp(R.N));
+      if(L.pelunasan.length){ ls.push(""); ls.push("Pelunasan bon lama:"); L.pelunasan.forEach(e => ls.push("- " + e.nama + " (" + (e.metode === "qris" ? "QRIS" : "Tunai") + "): " + rp(e.total))); }
+      ls.push("Piutang semua : " + rp(R.PT));
+      sec("5. BON", ls); }
+    // 6, 7
+    const daftar = (arr, tot) => { const ls = arr.length ? arr.map(e => "- " + e.ket + " : " + rp(e.jml)) : ["-"]; ls.push(garisDari(ls)); ls.push("Total : " + rp(tot)); return ls; };
+    sec("6. PINJAMAN", daftar(L.pinjam, R.P));
+    sec("7. PENGELUARAN", daftar(L.keluar, R.E));
+    // 8-10
     const pbrTxt = (no, judul, jenis, c, n) => {
-      o.push("*" + no + ". " + judul + "*");
-      const a = L.pbr[jenis];
+      const a = L.pbr[jenis], ls = [];
       if(a.length){
-        a.forEach(e => o.push("- " + itemsText(e.items) + (e.ket ? " (" + e.ket + ")" : "") + (jenis === "promo" ? " | diterima " + rp(e.terima || 0) : "")));
-        o.push("Total " + c + " cup = " + rp(n) + (jenis === "promo" ? " (potongan " + rp(R.PRd) + ")" : ""));
-      } else o.push("-");
-      o.push("");
+        a.forEach(e => { ls.push((e.ket ? e.ket : "Catatan") + (jenis === "promo" ? " | diterima " + rp(e.terima || 0) : "")); menuRows(pairsOf(e.items)).forEach(l => ls.push("  " + l)); });
+        ls.push(garisDari(ls)); ls.push("Total : " + c + " cup = " + rp(n));
+        if(jenis === "promo") ls.push("Potongan promo : " + rp(R.PRd));
+      } else ls.push("-");
+      sec(no + ". " + judul, ls);
     };
     pbrTxt("8", "PROMO", "promo", R.PRc, R.PRn);
     pbrTxt("9", "BONUS", "bonus", R.BOc, R.BOn);
     pbrTxt("10", "BARANG RUSAK / CACAT PRODUK", "rusak", R.RUc, R.RUn);
-    o.push("*CUP TERJUAL (KASIR)*");
-    { const rt = rowsTerjual(L); if(rt.length){ rt.forEach(r => o.push(bar(r.m, r.q))); o.push("Total " + rt.reduce((a, r) => a + r.q, 0) + " cup = " + rp(R.rec)); } else o.push("-"); }
-    o.push("");
-    o.push("*PERHITUNGAN UANG CASH*");
-    o.push("Total stok " + rp(R.A));
-    o.push("+ Stok dari rider lain " + rp(R.B));
-    o.push("- Stok diberikan ke rider lain " + rp(R.C));
-    o.push("- Sisa stok " + rp(R.D));
-    o.push("= Nilai stok terjual " + rp(R.S));
-    o.push("- Qris " + rp(R.Q));
-    o.push("- Bon " + rp(R.N));
-    o.push("- Pinjaman " + rp(R.P));
-    if(R.PRd) o.push("- Potongan promo " + rp(R.PRd));
-    if(R.BOn) o.push("- Bonus " + rp(R.BOn));
-    if(R.RUn) o.push("- Barang rusak/cacat " + rp(R.RUn));
-    if(PENGELUARAN_KURANGI_CASH) o.push("- Pengeluaran " + rp(R.E));
-    if(R.BL) o.push("+ Pelunasan bon lama (tunai) " + rp(R.BL));
-    o.push("= Uang cash hasil jualan " + rp(R.X));
-    o.push("+ Uang kas " + rp(R.K));
+    // cup terjual
+    { const rt = rowsTerjual(L), cp = rt.reduce((x, r) => x + r.q, 0);
+      sec("CUP TERJUAL (KASIR)", menuRows(rt.map(r => [r.m, r.q]), rt.length ? ["Total : " + cp + " cup", "Nilai : " + rp(R.rec)] : null)); }
+    // hitung
+    const h = [["Total stok", rp(R.A)], ["+ Dari rider lain", rp(R.B)], ["- Ke rider lain", rp(R.C)], ["- Sisa stok", rp(R.D)], ["= Stok terjual", rp(R.S)],
+      ["- Qris", rp(R.Q)], ["- Bon", rp(R.N)], ["- Pinjaman", rp(R.P)]];
+    if(R.PRd) h.push(["- Potongan promo", rp(R.PRd)]);
+    if(R.BOn) h.push(["- Bonus", rp(R.BOn)]);
+    if(R.RUn) h.push(["- Barang rusak", rp(R.RUn)]);
+    if(PENGELUARAN_KURANGI_CASH) h.push(["- Pengeluaran", rp(R.E)]);
+    if(R.BL) h.push(["+ Lunas bon lama", rp(R.BL)]);
+    h.push(["= Cash jualan", rp(R.X)], ["+ Uang kas", rp(R.K)], ["= Total tangan", rp(R.TT)]);
+    sec("PERHITUNGAN UANG CASH", kv(h, ["= Stok terjual", "= Cash jualan", "= Total tangan"]));
     o.push("*TOTAL UANG DI TANGAN " + rp(R.TT) + "*");
     return o.join("\n");
   }
