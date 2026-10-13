@@ -228,6 +228,23 @@
 
   .log{background:#fff;border-radius:10px;padding:9px 12px;margin-bottom:6px;font-size:13px;line-height:1.5;box-shadow:0 1px 3px rgba(0,0,0,.07)}
   .log small{display:block;color:#888;font-size:11px}
+  .rwf{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px}
+  .rwf button{flex:none;border:1.5px solid var(--green);background:#fff;color:var(--green);border-radius:20px;padding:5px 12px;font-weight:700;font-size:12px;cursor:pointer}
+  .rwf button.on{background:var(--green);color:#fff}
+  .rwday{font-size:12px;font-weight:800;color:#777;text-transform:uppercase;letter-spacing:.5px;margin:14px 2px 6px}
+  .rw{display:flex;gap:10px;background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.07);border-left:4px solid var(--green)}
+  .rw.c-stok{border-left-color:#c9a24a}.rw.c-lain{border-left-color:#8a8a8a}.rw.c-batal{border-left-color:#bbb;background:#f4f4f1;opacity:.85}
+  .rwic{flex:none;width:34px;height:34px;border-radius:50%;background:#eef3ef;display:flex;align-items:center;justify-content:center;font-size:17px}
+  .rwbody{flex:1;min-width:0}
+  .rwtop{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .rwtop b{font-size:14px;line-height:1.3}
+  .rwamt{font-weight:800;font-size:14px;color:var(--green);white-space:nowrap}
+  .rwd{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;font-size:12px;color:#555}
+  .chip{background:#f1f1ec;border-radius:12px;padding:2px 9px;font-size:12px;font-weight:600;color:#333}
+  .chip.off{background:#fff3cd;color:#7a5b00}
+  .rwtime{font-size:11px;color:#999;margin-top:5px}
+  .rw .logact{margin-top:8px}
+  .rw .logact button{padding:5px 8px;font-size:12px}
   .logact{display:flex;gap:8px;margin-top:8px}
   .logact button{flex:1;border:1px solid var(--green);background:#fff;color:var(--green);border-radius:20px;padding:6px 10px;font-weight:700;font-size:12px;cursor:pointer}
   .logact button.del{border-color:var(--red);color:var(--red)}
@@ -635,6 +652,8 @@
   function openStok(t){ if(t) sTab = t; draft = {}; document.getElementById("sheet").classList.add("show"); renderStok(); }
   function closeStok(){ editT = null; editStokT = null; document.getElementById("sheet").classList.remove("show"); }
   function stokTab(t){ sTab = t; draft = {}; editT = null; editStokT = null; renderStok(); document.getElementById("sheetBody").scrollTop = 0; }
+  let rwFilter = "all";
+  function setRw(k){ rwFilter = k; renderStok(); }
   function setOper(m){ operMode = m; draft = {}; ketDraft = ""; terimaDraft = ""; renderStok(); }
 
   function barisStepper(){
@@ -710,24 +729,49 @@
       const jual = riwayat.filter(e => e.type === "jual");
       const cup = jual.reduce((s,e) => s + Object.keys(e.items).reduce((a,id) => a + e.items[id], 0), 0);
       const omzet = jual.reduce((s,e) => s + e.total, 0);
-      const label = e => {
-        const w = new Date(e.t).toLocaleString("id-ID", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
-        let t = "";
-        if(e.type === "jual") t = `🧾 Penjualan (${e.pay === "qris" ? "QRIS" : e.pay === "bon" ? "BON " + esc(e.nama || "-") + (e.lunas ? ", lunas" : "") : "Tunai"}) · ${itemsText(e.items)} · ${rp(e.total)}`;
-        else if(e.type === "produksi") t = `🏭 Tambah dari produksi · ${itemsText(e.items)}`;
-        else if(e.type === "oper") t = e.dir === "terima" ? `⬇ Terima dari ${esc(e.rider)} · ${itemsText(e.items)}` : `⬆ Beri ke ${esc(e.rider)} · ${itemsText(e.items)}`;
-        else if(e.type === "pbr") t = `${PBR_IKON[e.jenis]} ${PBR_NAMA[e.jenis]}${e.ket ? " (" + esc(e.ket) + ")" : ""} · ${itemsText(e.items)}${e.jenis === "promo" ? " · diterima " + rp(e.terima || 0) : ""}`;
-        else if(e.type === "pinjam") t = `💸 Pinjaman · ${esc(e.ket)} · ${rp(e.jml)}`;
-        else if(e.type === "batal") t = "↩ " + esc(e.ket);
-        else if(e.type === "bayarbon") t = `💰 Pelunasan bon ${esc(e.nama)} (${e.metode === "qris" ? "QRIS" : "Tunai"}) · ${itemsText(e.items)} · ${rp(e.total)}${e.baru ? "" : " · bon lama"}`;
-        else if(e.type === "keluar") t = `🧾 Pengeluaran · ${esc(e.ket)} · ${rp(e.jml)}`;
-        else t = `${e.koreksi ? "✏️ Koreksi stok" : "📦 Stok awal diatur"} · ${itemsText(e.items)}`;
-        if(e.diubah && e.type !== "batal") t += " · <i>(sudah diubah)</i>";
-        const act = e.type === "pbr" ? `<div class="logact"><button onclick="ubahPBR(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanStok(${e.t})">🗑 Batalkan</button></div>` : (e.type === "produksi" || e.type === "oper") ? `<div class="logact"><button onclick="mulaiUbahStok(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanStok(${e.t})">🗑 Batalkan</button></div>` : e.type === "bayarbon" ? `<div class="logact"><button class="del" onclick="batalBayar(${e.t})">↩ Batalkan pelunasan</button></div>` : e.type === "jual" ? `<div class="logact"><button onclick="mulaiUbah(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanJual(${e.t})">🗑 Batalkan</button></div>` : "";
-        return `<div class="log">${t}<small>${w}</small>${act}</div>`;
+      const cupN = it => Object.keys(it || {}).reduce((x, id) => x + it[id], 0);
+      const bt = (cls, fn, txt) => `<button class="${cls}" onclick="${fn}">${txt}</button>`;
+      const kind = e => e.type === "jual" || e.type === "bayarbon" ? "jual" : (e.type === "produksi" || e.type === "oper" || e.type === "pbr" || e.type === "atur") ? "stok" : "lain";
+      const info = e => {
+        const itx = e.items ? urut(e.items).map(id => `<span class="chip">${e.items[id]}× ${nameOf(id)}</span>`).join("") : "";
+        let o = {ic:"📦", c:"c-stok", t:"", d:itx, amt:"", act:""};
+        const ub = (fnU, fnB) => bt("", `${fnU}(${e.t})`, "✏️ Ubah") + bt("del", `${fnB}(${e.t})`, "🗑 Batalkan");
+        if(e.type === "jual"){
+          const byr = e.pay === "qris" ? "QRIS" : e.pay === "bon" ? "Bon · " + esc(e.nama || "-") + (e.lunas ? " (lunas)" : "") : "Tunai";
+          o = {ic: e.pay === "qris" ? "📱" : e.pay === "bon" ? "📒" : "💵", c:"c-jual", t:"Penjualan · " + byr, d:itx, amt:rp(e.total), act: ub("mulaiUbah", "batalkanJual")};
+        } else if(e.type === "bayarbon"){
+          o = {ic:"💰", c:"c-jual", t:"Pelunasan bon · " + esc(e.nama) + " (" + (e.metode === "qris" ? "QRIS" : "Tunai") + ")", d:itx + (e.baru ? "" : '<span class="chip off">bon lama</span>'), amt:rp(e.total), act: bt("del", `batalBayar(${e.t})`, "↩ Batalkan pelunasan")};
+        } else if(e.type === "produksi"){
+          o = {ic:"🏭", c:"c-stok", t:"Tambah dari rumah", d:itx, amt:"+" + cupN(e.items) + " cup", act: ub("mulaiUbahStok", "batalkanStok")};
+        } else if(e.type === "oper"){
+          o = {ic: e.dir === "terima" ? "⬇️" : "⬆️", c:"c-stok", t:(e.dir === "terima" ? "Terima dari " : "Beri ke ") + esc(e.rider), d:itx, amt:(e.dir === "terima" ? "+" : "−") + cupN(e.items) + " cup", act: ub("mulaiUbahStok", "batalkanStok")};
+        } else if(e.type === "pbr"){
+          o = {ic:PBR_IKON[e.jenis], c:"c-stok", t:PBR_NAMA[e.jenis] + (e.ket ? " · " + esc(e.ket) : ""), d:itx, amt: e.jenis === "promo" ? rp(e.terima || 0) : "−" + cupN(e.items) + " cup", act: bt("", `ubahPBR(${e.t})`, "✏️ Ubah") + bt("del", `batalkanStok(${e.t})`, "🗑 Batalkan")};
+        } else if(e.type === "pinjam"){
+          o = {ic:"💸", c:"c-lain", t:"Pinjaman", d:esc(e.ket), amt:rp(e.jml)};
+        } else if(e.type === "keluar"){
+          o = {ic:"🧾", c:"c-lain", t:"Pengeluaran", d:esc(e.ket), amt:rp(e.jml)};
+        } else if(e.type === "batal"){
+          o = {ic:"↩", c:"c-batal", t:"Dibatalkan", d:esc((e.ket || "").replace(/^Dibatalkan:\s*/, "")), amt:""};
+        } else {
+          o = {ic:e.koreksi ? "✏️" : "📦", c:"c-stok", t:e.koreksi ? "Koreksi sisa stok" : "Stok awal diatur", d:itx, amt:""};
+        }
+        if(e.diubah && e.type !== "batal") o.d += '<span class="chip off">sudah diubah</span>';
+        return o;
       };
+      const flt = riwayat.filter(e => rwFilter === "all" || (rwFilter === "batal" ? e.type === "batal" : kind(e) === rwFilter && e.type !== "batal"));
+      let lastDay = "";
+      const rows = flt.slice().reverse().slice(0, 80).map(e => {
+        const dt = new Date(e.t), day = dt.toLocaleDateString("id-ID", {weekday:"long", day:"numeric", month:"long"});
+        const jam = dt.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", ".");
+        const head = day !== lastDay ? `<div class="rwday">${day}</div>` : ""; lastDay = day;
+        const x = info(e);
+        return head + `<div class="rw ${x.c}"><div class="rwic">${x.ic}</div><div class="rwbody"><div class="rwtop"><b>${x.t}</b>${x.amt ? `<span class="rwamt">${x.amt}</span>` : ""}</div>${x.d ? `<div class="rwd">${x.d}</div>` : ""}<div class="rwtime">${jam}</div>${x.act ? `<div class="logact">${x.act}</div>` : ""}</div></div>`;
+      }).join("");
+      const chips = [["all","Semua"],["jual","Penjualan"],["stok","Stok"],["lain","Lainnya"],["batal","Batal"]].map(([k, n]) => `<button class="${rwFilter === k ? "on" : ""}" onclick="setRw('${k}')">${n}</button>`).join("");
       b.innerHTML = `<div class="sum"><div><b>${cup}</b><small>cup terjual</small></div><div><b>${rp(omzet)}</b><small>total penjualan</small></div></div>` +
-        (riwayat.length ? riwayat.slice().reverse().slice(0, 60).map(label).join("") : `<p class="hint">Belum ada riwayat.</p>`) +
+        `<div class="rwf">${chips}</div>` +
+        (rows || `<p class="hint">${riwayat.length ? "Tidak ada catatan di kategori ini." : "Belum ada riwayat."}</p>`) +
         `<button class="reset" onclick="resetHari()">Mulai Hari Baru (tutup &amp; arsipkan)</button>`;
     }
   }
@@ -1289,6 +1333,7 @@
     return R;
   }
 
+  function rowsTerjual(L){ return MENU.map(m => ({m, q: L.jual[m.id] || 0})).filter(r => r.q > 0); }
   function baris(m, q){ return `<div class="ln"><span>${m.name}</span><span>${barisHargaHtml(m, q)}</span></div>`; }
   function barisItems(items){ return urut(items).map(id => baris(produk(id), items[id])).join(""); }
   function bagianOper(judul, g, kata){
@@ -1379,6 +1424,10 @@
       `<div class="rcard"><h4>6. Pinjaman</h4><p class="qm">Uang hasil jualan yang dipakai karyawan.</p>${listLap(L.pinjam, "pinjam", R.P, "Total pinjaman", "mis. beli makan")}</div>` +
       `<div class="rcard"><h4>7. Pengeluaran</h4>${listLap(L.keluar, "keluar", R.E, "Total pengeluaran", "mis. es batu")}</div>` +
       pbrCard("8", "Promo", "promo", R) + pbrCard("9", "Bonus", "bonus", R) + pbrCard("10", "Barang Rusak / Cacat Produk", "rusak", R) +
+      (() => { const rt = rowsTerjual(L), cp = rt.reduce((a, r) => a + r.q, 0);
+        return `<div class="rcard"><h4>📊 Cup Terjual</h4><p class="qm">Penjualan lewat kasir (tunai, QRIS, bon).</p>` +
+          (rt.length ? rt.map(r => baris(r.m, r.q)).join("") + `<div class="ln tot"><span>Total ${cp} cup</span><span>${rp(R.rec)}</span></div>` : `<p class="empty-ln">Belum ada penjualan.</p>`) +
+          `</div>`; })() +
       `<div class="rcard calc"><h4>Perhitungan Uang Cash</h4><div id="hitungBox">${htmlHitung(R)}</div>
         <div class="ln kasrow"><span>+ Uang kas (modal kembalian)</span><span><input id="kasIn" inputmode="numeric" value="${nf(kas)}" oninput="fmtRp(this);setKas(this.value)" autocomplete="off"></span></div>
         <div id="totalBox">${htmlTotal(R)}</div></div>` +
@@ -1442,6 +1491,9 @@
     pbrTxt("8", "PROMO", "promo", R.PRc, R.PRn);
     pbrTxt("9", "BONUS", "bonus", R.BOc, R.BOn);
     pbrTxt("10", "BARANG RUSAK / CACAT PRODUK", "rusak", R.RUc, R.RUn);
+    o.push("*CUP TERJUAL (KASIR)*");
+    { const rt = rowsTerjual(L); if(rt.length){ rt.forEach(r => o.push(bar(r.m, r.q))); o.push("Total " + rt.reduce((a, r) => a + r.q, 0) + " cup = " + rp(R.rec)); } else o.push("-"); }
+    o.push("");
     o.push("*PERHITUNGAN UANG CASH*");
     o.push("Total stok " + rp(R.A));
     o.push("+ Stok dari rider lain " + rp(R.B));
