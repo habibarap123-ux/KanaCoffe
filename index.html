@@ -223,6 +223,23 @@
   .calc .ln.grand.neg{color:#a61c1c}
   .kasrow input{width:120px;text-align:right;font-size:16px;font-weight:700;border:2px solid var(--gold);border-radius:8px;padding:5px 8px;background:#fff;color:#111;font-family:inherit}
   .qm2{font-size:11px;opacity:.8;margin-top:4px;text-align:center}
+  .qdet{margin-top:10px;border-top:1px dashed #cfd8d2;padding-top:8px}
+  .qstat{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+  .qstat div{background:#eef4ef;border-radius:10px;padding:7px 4px;text-align:center}
+  .qstat b{display:block;font-size:14px;color:var(--green);line-height:1.2}
+  .qstat small{font-size:10.5px;color:#666}
+  .qdet details{margin-top:6px}
+  .qdet summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--green);padding:6px 0;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  .qdet summary::-webkit-details-marker{display:none}
+  .qdet summary::after{content:"▾";font-size:12px;transition:transform .2s}
+  .qdet details[open] summary::after{transform:rotate(180deg)}
+  .qtx{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dotted #ddd;font-size:13px}
+  .qtx .ql{min-width:0}
+  .qtx .ql b{color:#111}
+  .qtx .ql small{display:block;color:#777;font-size:12px;line-height:1.4}
+  .qtx .qr{font-weight:800;white-space:nowrap;color:var(--green)}
+  .qtag{display:inline-block;font-size:10px;font-weight:800;border-radius:10px;padding:1px 7px;margin-left:4px;background:#fff1cc;color:#7a5a00;vertical-align:1px}
+  .qtag.lama{background:#e6e6e6;color:#555}
   .done.wa{background:#25a244}
 
 
@@ -1255,13 +1272,13 @@
   }
   function catatPBR(j){ stokTab("oper"); setOper(j); }
   function resetHari(){
-    if(!confirm("Mulai hari baru? Penjualan, pinjaman, pengeluaran, dan laporan hari ini akan ditutup dan diarsipkan ke tab Rekap. Bon yang belum lunas dipindah ke tab Piutang dan tetap tersimpan. Stok yang tersisa tetap ada. Pastikan laporan sudah dikirim.")) return;
+    if(!confirm("Mulai hari baru? Penjualan, pinjaman, pengeluaran, dan laporan hari ini akan ditutup dan diarsipkan ke tab Rekap. Bon yang belum lunas dipindah ke tab Piutang dan tetap tersimpan. Semua stok akan direset ke kosong, isi lagi di tab Stok Awal besok pagi. Pastikan laporan sudah dikirim.")) return;
     arsipkanRiwayat();
     riwayat.filter(e => e.type === "jual" && e.pay === "bon" && !e.lunas).forEach(e => {
       if(!piutang.some(x => x.t === e.t)) piutang.push({t:e.t, nama:e.nama || "-", items:Object.assign({}, e.items), total:e.total});
     });
     riwayat = []; terjual = {}; qrisManual = null;
-    awal = {}; Object.keys(stok).forEach(id => { awal[id] = stok[id]; });
+    stok = {}; awal = {}; soldOut = {}; draft = {};
     simpanSemua(); renderStok(); renderMenu();
   }
 
@@ -1280,17 +1297,17 @@
   function tglLaporan(){ return riwayat.length ? new Date(riwayat[0].t) : new Date(); }
 
   function ledger(){
-    const L = {pelunasan:[], blTunai:0, blQris:0, prod:{}, terima:{}, beri:{}, jual:{}, opT:[], opB:[], qris:0, bon:[], pinjam:[], keluar:[], pbr:{promo:[], bonus:[], rusak:[]}, pb:{}};
+    const L = {pelunasan:[], blTunai:0, blQris:0, prod:{}, terima:{}, beri:{}, jual:{}, opT:[], opB:[], qris:0, qrisList:[], bon:[], pinjam:[], keluar:[], pbr:{promo:[], bonus:[], rusak:[]}, pb:{}};
     const add = (m, it) => Object.keys(it).forEach(id => { m[id] = (m[id] || 0) + it[id]; });
     riwayat.forEach(e => {
       if(e.type === "produksi") add(L.prod, e.items);
       else if(e.type === "oper"){ add(e.dir === "terima" ? L.terima : L.beri, e.items); (e.dir === "terima" ? L.opT : L.opB).push(e); }
-      else if(e.type === "jual"){ add(L.jual, e.items); if(e.pay === "qris") L.qris += e.total; if(e.pay === "bon") L.bon.push(e); }
+      else if(e.type === "jual"){ add(L.jual, e.items); if(e.pay === "qris"){ L.qris += e.total; L.qrisList.push({t:e.t, items:e.items, total:e.total, src:"kasir"}); } if(e.pay === "bon") L.bon.push(e); }
       else if(e.type === "pbr"){ if(L.pbr[e.jenis]){ L.pbr[e.jenis].push(e); add(L.pb, e.items); } }
       else if(e.type === "pinjam") L.pinjam.push(e);
       else if(e.type === "keluar") L.keluar.push(e);
       else if(e.type === "bayarbon"){
-        if(e.baru){ if(e.metode === "qris") L.qris += e.total; }
+        if(e.baru){ if(e.metode === "qris"){ L.qris += e.total; L.qrisList.push({t:e.t, items:e.items, total:e.total, src:"bon", nama:e.nama}); } }
         else { L.pelunasan.push(e); if(e.metode === "qris") L.blQris += e.total; else L.blTunai += e.total; }
       }
     });
@@ -1362,12 +1379,42 @@
     const cek = sel > 0 ? `<div class="warn2">Catatan: hitungan stok menunjukkan terjual ${rp(R.S)}, sedangkan kasir + promo/bonus/rusak mencatat ${rp(R.rec + R.PB)} (selisih ${rp(sel)}). Periksa stok sisa atau penjualan yang belum dicatat di kasir.</div>` : "";
     return `<div class="ln grand${R.TT < 0 ? " neg" : ""}"><span>TOTAL UANG DI TANGAN</span><span>${rp(R.TT)}</span></div><p class="qm2">= uang cash hasil jualan + uang kas</p>${cek}`;
   }
+  const jamQ = t => new Date(t).toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", ".");
+  function rincianQris(R){
+    const L = R.L, list = L.qrisList.slice().sort((a, b) => a.t - b.t);
+    const lama = L.pelunasan.filter(e => e.metode === "qris").sort((a, b) => a.t - b.t);
+    const kasir = list.filter(x => x.src === "kasir"), bon = list.filter(x => x.src === "bon");
+    const sum = a => a.reduce((x, y) => x + y.total, 0);
+    const cupAll = list.reduce((x, y) => x + rupiahCup(y.items).q, 0);
+    const per = {}; list.forEach(x => Object.keys(x.items).forEach(id => { per[id] = (per[id] || 0) + x.items[id]; }));
+    let h = "";
+    if(!list.length && !lama.length) return `<div class="qdet"><p class="empty-ln">Belum ada pembayaran QRIS tercatat di kasir.</p></div>`;
+    if(list.length){
+      const maks = list.reduce((m, x) => x.total > m ? x.total : m, 0);
+      h += `<div class="qstat"><div><b>${list.length}</b><small>transaksi</small></div><div><b>${cupAll}</b><small>cup</small></div><div><b>${rp(Math.round(sum(list) / list.length))}</b><small>rata-rata</small></div></div>`;
+      h += `<div class="ln"><span>Penjualan kasir (${kasir.length} trx)</span><span>${rp(sum(kasir))}</span></div>`;
+      if(bon.length) h += `<div class="ln"><span>Bon hari ini dilunasi QRIS (${bon.length} trx)</span><span>${rp(sum(bon))}</span></div>`;
+      h += `<div class="ln sub"><span>Transaksi terbesar</span><span>${rp(maks)}</span></div>`;
+      h += `<details open><summary>Daftar transaksi (${list.length})</summary>` + list.map(x =>
+        `<div class="qtx"><div class="ql"><b>${jamQ(x.t)}</b>${x.src === "bon" ? `<span class="qtag">bon · ${esc(x.nama || "-")}</span>` : ""}<small>${itemsText(x.items)}</small></div><div class="qr">${rp(x.total)}</div></div>`).join("") + `</details>`;
+      h += `<details><summary>Cup per menu lewat QRIS</summary>` + urut(per).map(id => baris(produk(id), per[id])).join("") + `</details>`;
+    }
+    if(lama.length){
+      h += `<details><summary>Pelunasan bon lama via QRIS (${lama.length})</summary>` + lama.map(e =>
+        `<div class="qtx"><div class="ql"><b>${jamQ(e.t)}</b><span class="qtag lama">bon lama</span><small>${esc(e.nama)} · ${itemsText(e.items)}</small></div><div class="qr">${rp(e.total)}</div></div>`).join("") +
+        `<p class="qm">Tidak dihitung ke uang cash hari ini.</p></details>`;
+    }
+    const sel = R.Q - R.qrisAuto;
+    if(qrisManual !== null && sel !== 0) h += `<div class="warn2">Angka QRIS diubah manual: ${sel > 0 ? "lebih besar" : "lebih kecil"} ${rp(Math.abs(sel))} dari catatan kasir (${rp(R.qrisAuto)}).</div>`;
+    h += `<div class="ln tot2" style="margin-top:6px"><span>Total masuk QRIS (cek mutasi)</span><span>${rp(R.qrisAuto + R.BQ)}</span></div><p class="qm">Kasir ${rp(R.qrisAuto)}${R.BQ ? ` + bon lama ${rp(R.BQ)}` : ""}. Cocokkan dengan mutasi/notifikasi QRIS.</p>`;
+    return `<div class="qdet">${h}</div>`;
+  }
   function catQris(R){
     return qrisManual === null ? "Otomatis dari kasir." : `Diubah manual (dari kasir: ${rp(R.qrisAuto)}). <button class="linkbtn" onclick="pakaiOtomatis()">Pakai otomatis</button>`;
   }
   function updHitung(){
     const R = susunLaporan(), set = (id, v) => { const el = document.getElementById(id); if(el) el.innerHTML = v; };
-    set("hitungBox", htmlHitung(R)); set("totalBox", htmlTotal(R)); set("qrisVal", rp(R.Q)); set("qrisNote", catQris(R));
+    set("hitungBox", htmlHitung(R)); set("totalBox", htmlTotal(R)); set("qrisVal", rp(R.Q)); set("qrisNote", catQris(R)); set("qrisDetail", rincianQris(R));
   }
   function setQris(v){ qrisManual = v === "" ? null : digits(v); simpanSemua(); updHitung(); }
   function pakaiOtomatis(){ qrisManual = null; simpanSemua(); const el = document.getElementById("qrisIn"); if(el) el.value = ""; updHitung(); }
@@ -1418,7 +1465,7 @@
       `<div class="rcard"><h4>1. Total Stok</h4>${s1}</div>` +
       `<div class="rcard"><h4>2. +/− Stok dari Rider Lain</h4>${bagianOper("Tambah stok dari rider lain", grupOper(L.opT), "Dari")}${bagianOper("Stok diberikan ke rider lain", grupOper(L.opB), "Ke")}</div>` +
       `<div class="rcard"><h4>3. Sisa Seluruh Stok</h4>${s3}</div>` +
-      `<div class="rcard"><h4>4. QRIS</h4><div class="ln tot2"><span>Qris =</span><span id="qrisVal">${rp(R.Q)}</span></div><p class="qm" id="qrisNote">${catQris(R)}</p>${R.BQ ? `<p class="qm">+ Pelunasan bon lama via QRIS ${rp(R.BQ)} (tidak dihitung ke uang cash).</p>` : ""}
+      `<div class="rcard"><h4>4. QRIS</h4><div class="ln tot2"><span>Qris =</span><span id="qrisVal">${rp(R.Q)}</span></div><p class="qm" id="qrisNote">${catQris(R)}</p><div id="qrisDetail">${rincianQris(R)}</div>
         <input id="qrisIn" inputmode="numeric" placeholder="Koreksi manual (kosongkan = otomatis)" value="${qrisManual === null ? "" : nf(qrisManual)}" oninput="fmtRp(this);setQris(this.value)" autocomplete="off"></div>` +
       `<div class="rcard"><h4>5. Bon</h4>${bonHtml}${pelHtml}<div class="ln tot2"><span>Total piutang semua pelanggan</span><span>${rp(R.PT)}</span></div><p class="qm">Kelola pelunasan di tab Piutang.</p></div>` +
       `<div class="rcard"><h4>6. Pinjaman</h4><p class="qm">Uang hasil jualan yang dipakai karyawan.</p>${listLap(L.pinjam, "pinjam", R.P, "Total pinjaman", "mis. beli makan")}</div>` +
@@ -1489,7 +1536,22 @@
       it.push({b:"Total sisa " + R.cupD + " cup"}, {b:"Total uang " + rp(R.D)});
       sec("3. SISA STOK", it); }
     // 4
-    sec("4. QRIS", [{b:"Qris = " + rp(R.Q)}].concat(qrisManual !== null ? ["(manual, kasir " + rp(R.qrisAuto) + ")"] : []));
+    { const it = [{b:"Qris = " + rp(R.Q)}];
+      const ql = L.qrisList.slice().sort((a, b) => a.t - b.t), lama = L.pelunasan.filter(e => e.metode === "qris");
+      if(qrisManual !== null) it.push("(manual, kasir " + rp(R.qrisAuto) + ")");
+      if(ql.length){
+        const tot = ql.reduce((x, y) => x + y.total, 0), cp = ql.reduce((x, y) => x + rupiahCup(y.items).q, 0);
+        it.push({b:"Rincian " + ql.length + " transaksi / " + cp + " cup"});
+        ql.forEach(x => {
+          const jm = new Date(x.t).toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", ".");
+          it.push(jm + (x.src === "bon" ? " bon " + (x.nama || "-") : ""));
+          it.push("  " + urut(x.items).map(id => x.items[id] + "x " + nameOf(id)).join(", "));
+          it.push("  " + rp(x.total));
+        });
+        it.push({b:"Rata-rata " + rp(Math.round(tot / ql.length)) + " per transaksi"});
+      }
+      if(lama.length){ it.push({b:"Bon lama dibayar QRIS " + rp(R.BQ)}); lama.forEach(e => { it.push("- " + e.nama); it.push("  " + rp(e.total)); }); }
+      sec("4. QRIS", it); }
     // 5
     { const it = [];
       if(L.bon.length) L.bon.forEach((e, i) => { it.push({b:(i + 1) + ". " + (e.nama || "-") + (e.lunas ? " [LUNAS]" : "")}); menuRows(pairsOf(e.items)).forEach(l => it.push(l)); it.push({b:"Total " + rupiahCup(e.items).q + " cup = " + rp(e.total)}); });
