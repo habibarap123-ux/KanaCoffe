@@ -322,6 +322,10 @@
   .eq{display:inline-grid;grid-template-columns:3ch 1.2ch 3.8ch 1.2ch 8ch;column-gap:.3em;align-items:baseline;font-variant-numeric:tabular-nums;white-space:nowrap}
   .eq i{font-style:normal;text-align:right}
   .eq i:nth-child(2),.eq i:nth-child(4){text-align:center}
+  .fotobtn{width:100%;margin:8px 0 4px;background:#fff;color:var(--green);border:2px dashed var(--green);border-radius:12px;padding:12px;font-weight:700;font-size:15px;cursor:pointer}
+  .fotobtn.send{background:#25d366;color:#fff;border:0}
+  .fotobtn.ok{background:#e8f3ea;border:2px solid var(--green)}
+  #fotoPrev{display:none;width:100%;max-height:150px;object-fit:contain;border-radius:10px;margin:6px 0;background:#f1f1ec}
 </style>
 </head>
 <body>
@@ -407,6 +411,9 @@
         <p class="qnote">Minta pelanggan scan QRIS dan isi nominal <b id="qTotal">Rp 0</b></p>
         <img class="qris" id="qrisImg" alt="QRIS Kana Coffee" onclick="openQR()">
         <p class="qhint">Ketuk gambar untuk memperbesar</p>
+        <button type="button" class="fotobtn" id="fotoBtn" onclick="fotoKlik()">📷 Foto Bukti Pembayaran</button>
+        <img id="fotoPrev" alt="Bukti pembayaran">
+        <p class="qhint" id="fotoNote">Foto layar HP pelanggan (pembayaran berhasil), lalu kirim ke grup WA sebelum tekan Selesai.</p>
       </div>
       <div id="bonBox" style="display:none">
         <label for="bonNama">Nama pelanggan yang bon</label>
@@ -418,6 +425,7 @@
     </div>
   </div>
 </aside>
+<input type="file" id="fotoIn" accept="image/*" capture="environment" style="display:none" onchange="onFoto(this)">
 <div class="qrfull" id="qrfull" onclick="this.classList.remove('show')">
   <p id="qfTotal"></p>
   <img id="qrisFull" alt="QRIS Kana Coffee">
@@ -611,9 +619,49 @@
     }
   }
   function openQR(){ document.getElementById("qrfull").classList.add("show"); }
+  // ===== FOTO BUKTI QRIS -> KIRIM KE WA =====
+  const WAJIB_FOTO_QRIS = true;
+  let fotoFile = null, fotoTerkirim = false;
+  function kecilkan(file){
+    return new Promise((res, rej) => {
+      const u = URL.createObjectURL(file), im = new Image();
+      im.onload = () => { const k = Math.min(1, 1000 / Math.max(im.width, im.height)), c = document.createElement("canvas"); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k); c.getContext("2d").drawImage(im, 0, 0, c.width, c.height); URL.revokeObjectURL(u); c.toBlob(b => b ? res(b) : rej(), "image/jpeg", 0.75); };
+      im.onerror = () => { URL.revokeObjectURL(u); rej(); };
+      im.src = u;
+    });
+  }
+  function fotoUI(){
+    const bt = document.getElementById("fotoBtn"), pv = document.getElementById("fotoPrev"), nt = document.getElementById("fotoNote");
+    bt.className = "fotobtn";
+    if(!fotoFile){ bt.textContent = "📷 Foto Bukti Pembayaran"; pv.style.display = "none"; pv.removeAttribute("src"); nt.textContent = "Foto layar HP pelanggan (pembayaran berhasil), lalu kirim ke grup WA sebelum tekan Selesai."; }
+    else if(!fotoTerkirim){ bt.textContent = "📤 Kirim ke Grup WA"; bt.classList.add("send"); nt.innerHTML = "Foto siap. Tekan tombol hijau, pilih grup WA, lalu kirim. <a href='#' onclick='fotoUlang();return false'>Foto ulang</a>"; }
+    else { bt.textContent = "✔ Terkirim. Ketuk untuk kirim ulang"; bt.classList.add("ok"); nt.textContent = "Bukti sudah dikirim. Tekan Selesai."; }
+  }
+  function fotoUlang(){ fotoFile = null; fotoTerkirim = false; fotoUI(); document.getElementById("fotoIn").click(); }
+  function fotoKlik(){ if(!fotoFile) document.getElementById("fotoIn").click(); else kirimFoto(); }
+  function onFoto(inp){
+    const f = inp.files && inp.files[0]; inp.value = ""; if(!f) return;
+    kecilkan(f).then(b => {
+      const t = new Date(), jam = t.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", ".");
+      fotoFile = new File([b], "bukti-qris-" + jam + "-" + cartTotal() + ".jpg", {type:"image/jpeg"}); fotoTerkirim = false;
+      const pv = document.getElementById("fotoPrev"); pv.src = URL.createObjectURL(b); pv.style.display = "block";
+      fotoUI();
+    }).catch(() => toast("Foto gagal dibaca, coba lagi"));
+  }
+  async function kirimFoto(){
+    if(!fotoFile) return;
+    const t = cartTotal(), jam = new Date().toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", ".");
+    const teks = "Bukti QRIS " + rp(t) + " · " + jam + (namaRider.trim() ? " · " + namaRider.trim() : "");
+    try {
+      if(navigator.canShare && navigator.canShare({files:[fotoFile]})){ await navigator.share({files:[fotoFile], text:teks}); fotoTerkirim = true; fotoUI(); }
+      else { toast("HP/browser ini tidak bisa kirim foto langsung. Simpan fotonya dan kirim manual"); }
+    } catch(err){ if(!err || err.name !== "AbortError") toast("Gagal membuka WhatsApp"); }
+  }
+  function resetFoto(){ fotoFile = null; fotoTerkirim = false; fotoUI(); }
   function finish(){
     const t = cartTotal();
     if(!t){ alert("Belum ada pesanan."); return; }
+    if(pay === "qris" && WAJIB_FOTO_QRIS && !fotoTerkirim){ toast(fotoFile ? "Kirim foto bukti ke grup WA dulu" : "Foto bukti pembayaran dulu"); return; }
     if(pay === "cash" && cash < t && !confirm("Uang belum cukup. Tetap selesaikan pesanan?")) return;
     let namaBon = (document.getElementById("bonNama").value || "").trim();
     if(pay === "bon" && !namaBon){ toast("Isi nama pelanggan untuk bon"); document.getElementById("bonNama").focus(); return; }
@@ -625,6 +673,7 @@
       terjual[id] = (terjual[id]||0) + items[id];
     });
     catat({type:"jual", items, total:t, pay, nama: pay === "bon" ? namaBon : undefined});
+    resetFoto();
     cart = {}; setCash(0); document.getElementById("bonNama").value = ""; setPay("cash"); renderMenu(); renderCart();
     toggleCart();
   }
