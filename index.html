@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="Abibb">
+<meta name="description" content="Kana Coffee - kopi es keliling dengan sepeda listrik. Menu, kasir, stok, dan laporan harian.">
+<meta name="theme-color" content="#1f4d2f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kana Coffee">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Kana Coffee - Menu</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -268,10 +276,22 @@
     .add{padding:8px 10px;font-size:13px;width:100%}
     .info{padding:12px}
   }
+
+  /* DEVELOPER / BANTUAN */
+  .devbox{max-width:1100px;margin:30px auto 0;padding:18px 20px;border:1px solid #ffffff2e;border-radius:14px;background:#ffffff0d;text-align:center}
+  .devbox h5{margin-bottom:6px}
+  footer .devbox p{max-width:560px;margin:0 auto 12px;line-height:1.6}
+  .devbox .btn-gold{display:inline-block;color:var(--green-dark);padding:9px 22px;font-size:14px;margin:0}
+  .seg{flex-wrap:wrap}
+  .seg button{flex:1 1 30%}
+  .pbrin{width:100%;font-size:16px;padding:10px 12px;border:2px solid var(--green);border-radius:10px;margin:6px 0 12px;font-family:inherit}
+  .eq{display:inline-grid;grid-template-columns:3ch 1.2ch 3.8ch 1.2ch 8ch;column-gap:.3em;align-items:baseline;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .eq i{font-style:normal;text-align:right}
+  .eq i:nth-child(2),.eq i:nth-child(4){text-align:center}
 </style>
 </head>
 <body>
-<!-- Website Kana Coffee dibuat oleh Abibb -->
+<!-- Website Kana Coffee dibuat & dikembangkan oleh Abibb. Bug / bantuan: WhatsApp 089527188127 -->
 
 <header>
   <div class="nav">
@@ -292,7 +312,7 @@
 <section class="hero" id="home">
   <h1>KANA COFFEE</h1>
   <h2>Always in Heart</h2>
-  <p>Nikmati kesegaran kopi pilihan terbaik untuk menemani setiap langkahmu.</p>
+  <p>Sesekali Rayakanlah, Beli Kopi Enak, Rokok Mahal Untuk Mengapresiasi Diri Sendiri Atas Pencapaian Selama Ini.</p>
   <a class="btn-gold" href="#menu">Lihat Menu Kami</a>
 </section>
 
@@ -322,7 +342,12 @@
     <div id="lokasi"><h5>Lokasi</h5>
       <p>📍 Keliling dengan sepeda listrik. Cek Instagram kami untuk lokasi hari ini.</p></div>
   </div>
-  <p class="copy">© 2026 Kana Coffee. Always in Heart.<br><span class="credit">Website dibuat oleh <b>Abibb</b></span></p>
+  <div class="devbox">
+    <h5>Bantuan Teknis Website</h5>
+    <p>Website ini dibuat dan dikembangkan oleh <b class="credit">Abibb</b>. Jika kamu menemukan bug atau membutuhkan bantuan terkait website ini, silakan hubungi saya melalui WhatsApp.</p>
+    <a class="btn-gold" href="https://wa.me/6289527188127" target="_blank" rel="noopener">💬 Hubungi Developer: 0895-2718-8127</a>
+  </div>
+  <p class="copy">© 2026 Kana Coffee. Always in Heart.<br><span class="credit">Dibuat dengan ❤ oleh <b>Abibb</b> · Developer Website</span></p>
 </footer>
 
 <div class="cartbar" id="cartbar" onclick="toggleCart()"><span id="cbInfo"></span><b>Lihat Pesanan ›</b></div>
@@ -396,14 +421,15 @@
     {id:1,img:"susuPremium",name:"Kopi Susu Premium",price:13000,cat:"Coffee",cup:["#e8c9a0","#c97b4a"]},
     {id:2,img:"aren",name:"Kopi Aren",price:12000,cat:"Coffee",cup:["#f0cfa0","#c8793a"]},
     {id:3,img:"susu",name:"Kopi Susu",price:9000,cat:"Coffee",cup:["#f3e2c7","#e3b78a"]},
-    {id:4,img:"strobery",name:"Strobery Scotch",price:12000,cat:"Non Coffee",cup:["#f27a9a","#d9366a"]},
     {id:5,img:"butterscotch",name:"Kopi Butterscotch",price:12000,cat:"Coffee",cup:["#f0cfa0","#d98a3d"]},
+    {id:4,img:"strobery",name:"Strobery Scotch",price:12000,cat:"Non Coffee",cup:["#f27a9a","#d9366a"]},
     {id:6,img:"macha",name:"Macha",price:12000,cat:"Non Coffee",cup:["#b9d98a","#7fae4d"]},
     {id:7,img:"americano",name:"Ice Americano",price:8000,cat:"Coffee",cup:["#b58b64","#4a2c17"],isNew:true},
     {id:8,img:"melon",name:"Melon",price:12000,cat:"Non Coffee",cup:["#c6f0a0","#8fd06a"],isNew:true},
   ];
 
   const rp = n => "Rp " + n.toLocaleString("id-ID");
+  const urut = o => Object.keys(o).sort((a, b) => MENU.findIndex(m => m.id == a) - MENU.findIndex(m => m.id == b));
   let cart = {}, filter = "all";
 
   function cupSVG(c){
@@ -454,7 +480,7 @@
   }
 
   function renderCart(){
-    const ids = Object.keys(cart);
+    const ids = urut(cart);
     let total = 0, count = 0;
     document.getElementById("items").innerHTML = ids.length ? ids.map(id=>{
       const m = MENU.find(x=>x.id==id), q = cart[id];
@@ -594,13 +620,22 @@
   }
   function refreshAll(){ clampCart(); simpanSemua(); renderMenu(); renderCart(); renderStok(); }
 
-  let sTab = "saya", operMode = "produksi", draft = {}, namaDraft = "";
+  let sTab = "saya", operMode = "produksi", draft = {}, namaDraft = "", ketDraft = "", terimaDraft = "";
+  const PBR_NAMA = {promo:"Promo", bonus:"Bonus", rusak:"Barang rusak/cacat"};
+  const PBR_IKON = {promo:"🏷", bonus:"🎁", rusak:"⚠️"};
+  const PBR_HINT = {
+    promo:"Cup yang dijual dengan harga promo/diskon. Isi jumlah cup per menu dan uang yang diterima (kosongkan jika gratis). Stok berkurang otomatis. Jangan dicatat lagi di kasir.",
+    bonus:"Cup yang diberikan gratis ke pelanggan (mis. beli 5 gratis 1). Stok berkurang, tidak ada uang masuk. Jangan dicatat lagi di kasir.",
+    rusak:"Cup yang rusak, tumpah, atau cacat sehingga tidak bisa dijual. Stok berkurang, tidak ada uang masuk."
+  };
+  const PBR_CONTOH = {promo:"mis. promo gajian", bonus:"mis. bonus langganan", rusak:"mis. tumpah / es mencair"};
+  const isPBR = m => m === "promo" || m === "bonus" || m === "rusak";
   let editT = null, editItems = {}, editPay = "cash", editNama = "";
   let editStokT = null, editStokItems = {}, editStokJenis = "produksi", editStokRider = "";
   function openStok(t){ if(t) sTab = t; draft = {}; document.getElementById("sheet").classList.add("show"); renderStok(); }
   function closeStok(){ editT = null; editStokT = null; document.getElementById("sheet").classList.remove("show"); }
   function stokTab(t){ sTab = t; draft = {}; editT = null; editStokT = null; renderStok(); document.getElementById("sheetBody").scrollTop = 0; }
-  function setOper(m){ operMode = m; draft = {}; renderStok(); }
+  function setOper(m){ operMode = m; draft = {}; ketDraft = ""; terimaDraft = ""; renderStok(); }
 
   function barisStepper(){
     return MENU.map(m => `<div class="srow"><div class="sn"><b>${m.name}</b><small>Stok sekarang: ${hasStok(m.id) ? stok[m.id] : "tidak dihitung"}</small></div>
@@ -608,7 +643,7 @@
   }
   function batasQ(id, v){
     if(v < 0) v = 0;
-    if(sTab === "oper" && operMode === "beri"){
+    if(sTab === "oper" && (operMode === "beri" || isPBR(operMode))){
       const mx = hasStok(id) ? stok[id] : 0;
       if(v > mx){ toast("Stok " + nameOf(id) + " hanya " + mx); v = mx; }
     }
@@ -621,7 +656,7 @@
     hitungDraft();
   }
   function itemsDraft(){ const o = {}; Object.keys(draft).forEach(id => { if(draft[id] > 0) o[id] = draft[id]; }); return o; }
-  function itemsText(items){ return Object.keys(items).map(id => items[id] + "× " + nameOf(id)).join(", "); }
+  function itemsText(items){ return urut(items).map(id => items[id] + "× " + nameOf(id)).join(", "); }
 
   function renderStok(){
     document.querySelectorAll("#stabs button").forEach(b => b.classList.toggle("on", b.dataset.s === sTab));
@@ -640,12 +675,21 @@
           `<button class="done" onclick="simpanKoreksi()">Simpan Koreksi Sisa</button></details>`
          : `<button class="done" onclick="simpanSaya()">Simpan Stok Awal</button>`);
     } else if(sTab === "oper"){
-      const prod = operMode === "produksi", terima = operMode === "terima";
-      const seg = `<div class="seg"><button class="${prod ? "on" : ""}" onclick="setOper('produksi')">🏭 Dari Rumah</button><button class="${terima ? "on" : ""}" onclick="setOper('terima')">⬇ Terima Rider</button><button class="${operMode === "beri" ? "on" : ""}" onclick="setOper('beri')">⬆ Beri Rider</button></div>`;
-      const nm = prod ? `<p class="hint">Tambah stok yang diambil dari rumah produksi. Isi jumlah cup per menu.</p>` : `<label for="riderName">${terima ? "Nama rider yang memberi stok" : "Nama rider yang menerima stok"}</label>
+      const prod = operMode === "produksi", terima = operMode === "terima", pbr = isPBR(operMode);
+      const sb = (m, l) => `<button class="${operMode === m ? "on" : ""}" onclick="setOper('${m}')">${l}</button>`;
+      const seg = `<div class="seg">` + sb("produksi", "🏭 Dari Rumah") + sb("terima", "⬇ Terima Rider") + sb("beri", "⬆ Beri Rider") + sb("promo", "🏷 Promo") + sb("bonus", "🎁 Bonus") + sb("rusak", "⚠ Rusak/Cacat") + `</div>`;
+      let nm;
+      if(prod) nm = `<p class="hint">Tambah stok yang diambil dari rumah produksi. Isi jumlah cup per menu.</p>`;
+      else if(pbr) nm = `<p class="hint">${PBR_HINT[operMode]}</p><label for="pbrKet">Keterangan (opsional)</label>
+        <input id="pbrKet" class="pbrin" placeholder="${PBR_CONTOH[operMode]}" value="${esc(ketDraft)}" oninput="ketDraft=this.value" autocomplete="off">` +
+        (operMode === "promo" ? `<label for="pbrTerima">Uang diterima dari promo (Rp)</label>
+        <input id="pbrTerima" class="pbrin" inputmode="numeric" placeholder="Rp 0 (kosongkan jika gratis)" value="${terimaDraft}" oninput="fmtRp(this);terimaDraft=this.value" autocomplete="off">` : "");
+      else nm = `<label for="riderName">${terima ? "Nama rider yang memberi stok" : "Nama rider yang menerima stok"}</label>
         <input id="riderName" list="riderList" placeholder="Nama rider" value="${esc(namaDraft)}" oninput="namaDraft=this.value">
         <datalist id="riderList">${daftarRider.map(n => `<option value="${esc(n)}">`).join("")}</datalist>`;
-      b.innerHTML = seg + nm + barisStepper() + `<div class="total-box" id="sumBox">${isiTotal(judulDraft(), itemsDraft())}</div><button class="done" onclick="${prod ? "simpanProduksi()" : "simpanOper()"}">${prod ? "Tambah ke Stok" : (terima ? "Konfirmasi Terima Stok" : "Konfirmasi Beri Stok")}</button>`;
+      const aksi = prod ? "simpanProduksi()" : (pbr ? "simpanPBR()" : "simpanOper()");
+      const labelAksi = prod ? "Tambah ke Stok" : (pbr ? "Catat " + PBR_NAMA[operMode] : (terima ? "Konfirmasi Terima Stok" : "Konfirmasi Beri Stok"));
+      b.innerHTML = seg + nm + barisStepper() + `<div class="total-box" id="sumBox">${isiTotal(judulDraft(), itemsDraft())}</div><button class="done" onclick="${aksi}">${labelAksi}</button>`;
     } else if(sTab === "lap"){
       renderLaporan();
     } else if(sTab === "piutang"){
@@ -672,13 +716,14 @@
         if(e.type === "jual") t = `🧾 Penjualan (${e.pay === "qris" ? "QRIS" : e.pay === "bon" ? "BON " + esc(e.nama || "-") + (e.lunas ? ", lunas" : "") : "Tunai"}) · ${itemsText(e.items)} · ${rp(e.total)}`;
         else if(e.type === "produksi") t = `🏭 Tambah dari produksi · ${itemsText(e.items)}`;
         else if(e.type === "oper") t = e.dir === "terima" ? `⬇ Terima dari ${esc(e.rider)} · ${itemsText(e.items)}` : `⬆ Beri ke ${esc(e.rider)} · ${itemsText(e.items)}`;
+        else if(e.type === "pbr") t = `${PBR_IKON[e.jenis]} ${PBR_NAMA[e.jenis]}${e.ket ? " (" + esc(e.ket) + ")" : ""} · ${itemsText(e.items)}${e.jenis === "promo" ? " · diterima " + rp(e.terima || 0) : ""}`;
         else if(e.type === "pinjam") t = `💸 Pinjaman · ${esc(e.ket)} · ${rp(e.jml)}`;
         else if(e.type === "batal") t = "↩ " + esc(e.ket);
         else if(e.type === "bayarbon") t = `💰 Pelunasan bon ${esc(e.nama)} (${e.metode === "qris" ? "QRIS" : "Tunai"}) · ${itemsText(e.items)} · ${rp(e.total)}${e.baru ? "" : " · bon lama"}`;
         else if(e.type === "keluar") t = `🧾 Pengeluaran · ${esc(e.ket)} · ${rp(e.jml)}`;
         else t = `${e.koreksi ? "✏️ Koreksi stok" : "📦 Stok awal diatur"} · ${itemsText(e.items)}`;
         if(e.diubah && e.type !== "batal") t += " · <i>(sudah diubah)</i>";
-        const act = (e.type === "produksi" || e.type === "oper") ? `<div class="logact"><button onclick="mulaiUbahStok(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanStok(${e.t})">🗑 Batalkan</button></div>` : e.type === "bayarbon" ? `<div class="logact"><button class="del" onclick="batalBayar(${e.t})">↩ Batalkan pelunasan</button></div>` : e.type === "jual" ? `<div class="logact"><button onclick="mulaiUbah(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanJual(${e.t})">🗑 Batalkan</button></div>` : "";
+        const act = e.type === "pbr" ? `<div class="logact"><button onclick="ubahPBR(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanStok(${e.t})">🗑 Batalkan</button></div>` : (e.type === "produksi" || e.type === "oper") ? `<div class="logact"><button onclick="mulaiUbahStok(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanStok(${e.t})">🗑 Batalkan</button></div>` : e.type === "bayarbon" ? `<div class="logact"><button class="del" onclick="batalBayar(${e.t})">↩ Batalkan pelunasan</button></div>` : e.type === "jual" ? `<div class="logact"><button onclick="mulaiUbah(${e.t})">✏️ Ubah</button><button class="del" onclick="batalkanJual(${e.t})">🗑 Batalkan</button></div>` : "";
         return `<div class="log">${t}<small>${w}</small>${act}</div>`;
       };
       b.innerHTML = `<div class="sum"><div><b>${cup}</b><small>cup terjual</small></div><div><b>${rp(omzet)}</b><small>total penjualan</small></div></div>` +
@@ -859,8 +904,8 @@
   }
 
   // --- arsip & rekap ---
-  const FIELD_HARI = ["omzet", "cup", "trx", "tunai", "qris", "bon", "pinjam", "keluar", "pelT", "pelQ"];
-  function kosongHari(d){ return {d, omzet:0, cup:0, trx:0, tunai:0, qris:0, bon:0, pinjam:0, keluar:0, pelT:0, pelQ:0, menu:{}, jam:{}}; }
+  const FIELD_HARI = ["omzet", "cup", "trx", "tunai", "qris", "bon", "pinjam", "keluar", "pelT", "pelQ", "promoC", "promoN", "promoT", "bonusC", "bonusN", "rusakC", "rusakN"];
+  function kosongHari(d){ return {d, omzet:0, cup:0, trx:0, tunai:0, qris:0, bon:0, pinjam:0, keluar:0, pelT:0, pelQ:0, promoC:0, promoN:0, promoT:0, bonusC:0, bonusN:0, rusakC:0, rusakN:0, menu:{}, jam:{}}; }
   function gabungHari(a, b){
     const r = kosongHari(a.d);
     [a, b].forEach(x => {
@@ -881,6 +926,11 @@
         if(e.pay === "qris") h.qris += e.total;
         else if(e.pay === "bon"){ if(e.lunas){ if(evBaru[e.t] === "qris") h.qris += e.total; else h.tunai += e.total; } else h.bon += e.total; }
         else h.tunai += e.total;
+      } else if(e.type === "pbr"){
+        const h = get(e.t), r = rupiahCup(e.items);
+        if(e.jenis === "promo"){ h.promoC += r.q; h.promoN += r.v; h.promoT += e.terima || 0; }
+        else if(e.jenis === "bonus"){ h.bonusC += r.q; h.bonusN += r.v; }
+        else if(e.jenis === "rusak"){ h.rusakC += r.q; h.rusakN += r.v; }
       } else if(e.type === "pinjam") get(e.t).pinjam += e.jml;
       else if(e.type === "keluar") get(e.t).keluar += e.jml;
       else if(e.type === "bayarbon" && !e.baru){ const h = get(e.t); if(e.metode === "qris") h.pelQ += e.total; else h.pelT += e.total; }
@@ -919,6 +969,13 @@
     else {
       h += `<div class="sum"><div><b>${T.cup}</b><small>cup terjual</small></div><div><b>${rp(T.omzet)}</b><small>omzet</small></div></div>` +
         `<p class="qm" style="text-align:center">${dlm.length} hari jualan · rata-rata ${rp(Math.round(T.omzet / dlm.length))}/hari · ${T.trx} transaksi</p>`;
+      if(T.promoC || T.bonusC || T.rusakC){
+        const l2 = (a, b) => `<div class="ln"><span>${a}</span><span>${b}</span></div>`;
+        h += `<div class="rcard"><h4>🏷 Promo, bonus &amp; rusak</h4>` +
+          (T.promoC ? l2("Promo · " + T.promoC + " cup (diterima " + rp(T.promoT) + ")", "potongan " + rp(T.promoN - T.promoT)) : "") +
+          (T.bonusC ? l2("Bonus gratis · " + T.bonusC + " cup", rp(T.bonusN)) : "") +
+          (T.rusakC ? l2("Rusak/cacat · " + T.rusakC + " cup", rp(T.rusakN)) : "") + `</div>`;
+      }
       const tm = topMenu(T.menu, 8), mx = tm.length ? tm[0].q : 1;
       h += `<div class="rcard"><h4>🏆 Menu terlaris</h4>` + tm.map((x, i) => `<div class="bar"><span class="nm">${i + 1}. ${esc(namaMenu(x.id))}</span><span class="tr"><span class="fl" style="display:block;width:${Math.max(4, Math.round(x.q / mx * 100))}%"></span></span><span class="vl">${x.q}</span></div>`).join("") + `</div>`;
       const jk = Object.keys(T.jam).map(Number).filter(k => T.jam[k] > 0);
@@ -942,6 +999,7 @@
         W[k].map(x => `<div class="ln dayrow"><span>${fmtHari(x.d)} · ${x.cup} cup</span><span>${rp(x.omzet)}</span></div>`).join("") +
         `<div class="grp">Rincian minggu</div>` +
         ln("Tunai", rp(J.tunai)) + ln("QRIS", rp(J.qris)) + ln("Bon baru (belum lunas)", rp(J.bon)) + ln("Pinjaman", rp(J.pinjam)) + ln("Pengeluaran", rp(J.keluar)) +
+        (J.promoC ? ln("Potongan promo (" + J.promoC + " cup)", rp(J.promoN - J.promoT)) : "") + (J.bonusC ? ln("Bonus gratis (" + J.bonusC + " cup)", rp(J.bonusN)) : "") + (J.rusakC ? ln("Rusak/cacat (" + J.rusakC + " cup)", rp(J.rusakN)) : "") +
         ((J.pelT + J.pelQ) ? ln("Pelunasan bon lama", rp(J.pelT + J.pelQ)) : "") +
         (top ? `<p class="qm" style="margin-top:8px">Terlaris: ${esc(top)}</p>` : "") +
         `<button class="done" onclick="salinMinggu('${k}')">📋 Salin rekap minggu ini</button></details>`;
@@ -958,6 +1016,9 @@
     o.push("Tunai: " + rp(J.tunai)); o.push("QRIS: " + rp(J.qris)); o.push("Bon baru (belum lunas): " + rp(J.bon));
     o.push("Pinjaman: " + rp(J.pinjam)); o.push("Pengeluaran: " + rp(J.keluar));
     if(J.pelT + J.pelQ) o.push("Pelunasan bon lama: " + rp(J.pelT + J.pelQ) + " (tunai " + rp(J.pelT) + ", QRIS " + rp(J.pelQ) + ")");
+    if(J.promoC) o.push("Promo: " + J.promoC + " cup (diterima " + rp(J.promoT) + ", potongan " + rp(J.promoN - J.promoT) + ")");
+    if(J.bonusC) o.push("Bonus gratis: " + J.bonusC + " cup (" + rp(J.bonusN) + ")");
+    if(J.rusakC) o.push("Rusak/cacat: " + J.rusakC + " cup (" + rp(J.rusakN) + ")");
     if(top) o.push("Menu terlaris: " + top);
     return o.join("\n");
   }
@@ -980,6 +1041,7 @@
     return d;
   }
   function ringkasStok(e){
+    if(e.type === "pbr") return PBR_NAMA[e.jenis] + (e.ket ? " (" + e.ket + ")" : "") + " · " + itemsText(e.items);
     return (e.type === "produksi" ? "Dari rumah" : e.dir === "terima" ? "Terima dari " + e.rider : "Beri ke " + e.rider) + " · " + itemsText(e.items);
   }
   function hitungStokBaru(lama, itemsBaru, jenisBaru){
@@ -1043,7 +1105,7 @@
     editStokT = null; refreshAll(); toast("Catatan stok diperbaiki");
   }
   function batalkanStok(t){
-    const e = riwayat.find(x => x.t === t && (x.type === "produksi" || x.type === "oper")); if(!e) return;
+    const e = riwayat.find(x => x.t === t && (x.type === "produksi" || x.type === "oper" || x.type === "pbr")); if(!e) return;
     const h = hitungStokBaru(e, {}, "produksi");
     if(h.err){ toast(h.err); return; }
     if(!confirm("Batalkan catatan ini?\n" + ringkasStok(e) + "\nSisa stok akan disesuaikan.")) return;
@@ -1067,12 +1129,12 @@
     document.querySelectorAll(".sin").forEach(i => { const n = parseInt(i.value.replace(/\D/g,"")) || 0; if(n) m[i.dataset.id] = n; });
     const el = document.getElementById("sumBox"); if(el) el.innerHTML = isiTotal("Total stok awal", m);
   }
-  function judulDraft(){ return operMode === "produksi" ? "Total yang ditambahkan" : (operMode === "terima" ? "Total yang diterima" : "Total yang diberikan"); }
+  function judulDraft(){ return isPBR(operMode) ? "Total " + PBR_NAMA[operMode].toLowerCase() : (operMode === "produksi" ? "Total yang ditambahkan" : (operMode === "terima" ? "Total yang diterima" : "Total yang diberikan")); }
   function hitungDraft(){
     const el = document.getElementById("sumBox"); if(el) el.innerHTML = isiTotal(judulDraft(), itemsDraft());
   }
 
-  function sudahTransaksi(){ return riwayat.some(e => e.type === "jual" || e.type === "produksi" || e.type === "oper"); }
+  function sudahTransaksi(){ return riwayat.some(e => e.type === "jual" || e.type === "produksi" || e.type === "oper" || e.type === "pbr"); }
   function simpanSaya(){
     if(sudahTransaksi()){ toast("Stok awal terkunci"); return; }
     const items = {};
@@ -1122,6 +1184,32 @@
     Object.keys(items).forEach(pastikanAwal);
     refreshAll(); toast(operMode === "terima" ? "Stok dari " + nama + " diterima" : "Stok ke " + nama + " dicatat");
   }
+  function simpanPBR(){
+    const items = itemsDraft(), jenis = operMode;
+    if(!isPBR(jenis)) return;
+    if(!Object.keys(items).length){ toast("Isi jumlah dulu"); return; }
+    for(const id of Object.keys(items)){
+      if(!hasStok(id) || stok[id] < items[id]){ toast("Stok " + nameOf(id) + " tidak cukup"); return; }
+    }
+    const ket = ketDraft.trim(), terima = jenis === "promo" ? digits(terimaDraft) : 0, nilai = rupiahCup(items).v;
+    if(terima > nilai){ toast("Uang diterima tidak boleh lebih dari harga normal (" + rp(nilai) + ")"); return; }
+    if(!confirm("Catat " + PBR_NAMA[jenis] + "?\n" + itemsText(items) + (jenis === "promo" ? "\nUang diterima: " + rp(terima) : "") + "\nStok akan berkurang.")) return;
+    Object.keys(items).forEach(id => { stok[id] -= items[id]; });
+    catat({type:"pbr", jenis, items, ket, terima}); draft = {}; ketDraft = ""; terimaDraft = "";
+    refreshAll(); toast(PBR_NAMA[jenis] + " dicatat");
+  }
+  function ubahPBR(t){
+    const e = riwayat.find(x => x.t === t && x.type === "pbr"); if(!e) return;
+    const h = hitungStokBaru(e, {}, "produksi");
+    if(h.err){ toast(h.err); return; }
+    if(!confirm("Ubah catatan ini?\n" + ringkasStok(e) + "\n\nCatatan lama akan dibatalkan (stok dikembalikan) dan isinya dimuat ke form. Ubah jumlahnya, lalu tekan Catat lagi.")) return;
+    h.ids.forEach(id => { if(h.tmp[id] !== undefined) stok[id] = h.tmp[id]; });
+    riwayat = riwayat.filter(x => x !== e);
+    sTab = "oper"; operMode = e.jenis; draft = Object.assign({}, e.items); ketDraft = e.ket || ""; terimaDraft = e.terima ? nf(e.terima) : "";
+    editT = null; editStokT = null; refreshAll(); toast("Ubah dulu, lalu tekan Catat");
+    document.getElementById("sheetBody").scrollTop = 0;
+  }
+  function catatPBR(j){ stokTab("oper"); setOper(j); }
   function resetHari(){
     if(!confirm("Mulai hari baru? Penjualan, pinjaman, pengeluaran, dan laporan hari ini akan ditutup dan diarsipkan ke tab Rekap. Bon yang belum lunas dipindah ke tab Piutang dan tetap tersimpan. Stok yang tersisa tetap ada. Pastikan laporan sudah dikirim.")) return;
     arsipkanRiwayat();
@@ -1139,6 +1227,7 @@
   const PENGELUARAN_KURANGI_CASH = true;
   const nf = n => n.toLocaleString("id-ID");
   const hargaK = p => p % 1000 === 0 ? String(p / 1000) : nf(p);
+  const barisHargaHtml = (m, q) => `<span class="eq"><i>${q}</i><i>×</i><i>${hargaK(m.price)}</i><i>=</i><i>${nf(q * m.price)}</i></span>`;
   const barisHarga = (m, q) => q + " × " + hargaK(m.price) + " = " + nf(q * m.price);
   const fmtTgl = d => d.toLocaleDateString("id-ID", {weekday:"long", day:"numeric", month:"long", year:"numeric"});
   function digits(v){ return parseInt(String(v).replace(/\D/g,"")) || 0; }
@@ -1147,12 +1236,13 @@
   function tglLaporan(){ return riwayat.length ? new Date(riwayat[0].t) : new Date(); }
 
   function ledger(){
-    const L = {pelunasan:[], blTunai:0, blQris:0, prod:{}, terima:{}, beri:{}, jual:{}, opT:[], opB:[], qris:0, bon:[], pinjam:[], keluar:[]};
+    const L = {pelunasan:[], blTunai:0, blQris:0, prod:{}, terima:{}, beri:{}, jual:{}, opT:[], opB:[], qris:0, bon:[], pinjam:[], keluar:[], pbr:{promo:[], bonus:[], rusak:[]}, pb:{}};
     const add = (m, it) => Object.keys(it).forEach(id => { m[id] = (m[id] || 0) + it[id]; });
     riwayat.forEach(e => {
       if(e.type === "produksi") add(L.prod, e.items);
       else if(e.type === "oper"){ add(e.dir === "terima" ? L.terima : L.beri, e.items); (e.dir === "terima" ? L.opT : L.opB).push(e); }
       else if(e.type === "jual"){ add(L.jual, e.items); if(e.pay === "qris") L.qris += e.total; if(e.pay === "bon") L.bon.push(e); }
+      else if(e.type === "pbr"){ if(L.pbr[e.jenis]){ L.pbr[e.jenis].push(e); add(L.pb, e.items); } }
       else if(e.type === "pinjam") L.pinjam.push(e);
       else if(e.type === "keluar") L.keluar.push(e);
       else if(e.type === "bayarbon"){
@@ -1162,7 +1252,7 @@
     });
     return L;
   }
-  function turunAwal(id, L){ return Math.max(0, stok[id] - (L.prod[id]||0) - (L.terima[id]||0) + (L.beri[id]||0) + (L.jual[id]||0)); }
+  function turunAwal(id, L){ return Math.max(0, stok[id] - (L.prod[id]||0) - (L.terima[id]||0) + (L.beri[id]||0) + (L.jual[id]||0) + (L.pb[id]||0)); }
   function pastikanAwal(id){ if(awal[id] === undefined && hasStok(id)) awal[id] = turunAwal(id, ledger()); }
   function grupOper(list){
     const g = {};
@@ -1187,15 +1277,20 @@
     R.N = L.bon.filter(e => !e.lunas).reduce((s, e) => s + e.total, 0);
     R.P = L.pinjam.reduce((s, e) => s + e.jml, 0);
     R.E = L.keluar.reduce((s, e) => s + e.jml, 0);
+    const nl = a => a.reduce((x, e) => x + rupiahCup(e.items).v, 0), cp = a => a.reduce((x, e) => x + rupiahCup(e.items).q, 0);
+    R.PRn = nl(L.pbr.promo); R.PRc = cp(L.pbr.promo); R.PRt = L.pbr.promo.reduce((x, e) => x + (e.terima || 0), 0); R.PRd = R.PRn - R.PRt;
+    R.BOn = nl(L.pbr.bonus); R.BOc = cp(L.pbr.bonus);
+    R.RUn = nl(L.pbr.rusak); R.RUc = cp(L.pbr.rusak);
+    R.PB = R.PRn + R.BOn + R.RUn;
     R.BL = L.blTunai; R.BQ = L.blQris; R.PT = piutang.reduce((a, b) => a + b.total, 0) + R.N;
-    R.X = R.BL + R.S - R.Q - R.N - R.P - (PENGELUARAN_KURANGI_CASH ? R.E : 0);
+    R.X = R.BL + R.S - R.Q - R.N - R.P - R.PRd - R.BOn - R.RUn - (PENGELUARAN_KURANGI_CASH ? R.E : 0);
     R.K = kas; R.TT = R.X + R.K;
     R.belum = MENU.filter(m => awal[m.id] === undefined).map(m => m.name);
     return R;
   }
 
-  function baris(m, q){ return `<div class="ln"><span>${m.name}</span><span>${barisHarga(m, q)}</span></div>`; }
-  function barisItems(items){ return Object.keys(items).map(id => baris(produk(id), items[id])).join(""); }
+  function baris(m, q){ return `<div class="ln"><span>${m.name}</span><span>${barisHargaHtml(m, q)}</span></div>`; }
+  function barisItems(items){ return urut(items).map(id => baris(produk(id), items[id])).join(""); }
   function bagianOper(judul, g, kata){
     if(!g.length) return `<div class="grp">${judul}</div><p class="empty-ln">Kosong</p>`;
     const gabung = {}; g.forEach(x => Object.keys(x.items).forEach(id => { gabung[id] = (gabung[id] || 0) + x.items[id]; }));
@@ -1213,13 +1308,13 @@
   function htmlHitung(R){
     const r = (label, v, cls) => `<div class="ln ${cls || ""}"><span>${label}</span><span>${rp(v)}</span></div>`;
     return r("Total stok (stok awal + tambah dari rumah)", R.A) + r("+ Stok dari rider lain", R.B) + r("− Stok diberikan ke rider lain", R.C) + r("− Sisa stok", R.D) +
-      r("= Nilai stok terjual", R.S, "sum") + r("− QRIS", R.Q) + r("− Bon (belum dibayar)", R.N) + r("− Pinjaman", R.P) +
+      r("= Nilai stok terjual", R.S, "sum") + r("− QRIS", R.Q) + r("− Bon (belum dibayar)", R.N) + r("− Pinjaman", R.P) + (R.PRd ? r("− Potongan promo (harga normal − uang diterima)", R.PRd) : "") + (R.BOn ? r("− Bonus (gratis)", R.BOn) : "") + (R.RUn ? r("− Barang rusak/cacat", R.RUn) : "") +
       (PENGELUARAN_KURANGI_CASH ? r("− Pengeluaran", R.E) : "") + (R.BL ? r("+ Pelunasan bon lama (tunai)", R.BL) : "") +
       r("= Uang cash hasil jualan", R.X, "cash" + (R.X < 0 ? " neg" : ""));
   }
   function htmlTotal(R){
-    const sel = Math.abs(R.S - R.rec);
-    const cek = sel > 0 ? `<div class="warn2">Catatan: hitungan stok menunjukkan terjual ${rp(R.S)}, sedangkan kasir mencatat ${rp(R.rec)} (selisih ${rp(sel)}). Periksa stok sisa atau penjualan yang belum dicatat di kasir.</div>` : "";
+    const sel = Math.abs(R.S - (R.rec + R.PB));
+    const cek = sel > 0 ? `<div class="warn2">Catatan: hitungan stok menunjukkan terjual ${rp(R.S)}, sedangkan kasir + promo/bonus/rusak mencatat ${rp(R.rec + R.PB)} (selisih ${rp(sel)}). Periksa stok sisa atau penjualan yang belum dicatat di kasir.</div>` : "";
     return `<div class="ln grand${R.TT < 0 ? " neg" : ""}"><span>TOTAL UANG DI TANGAN</span><span>${rp(R.TT)}</span></div><p class="qm2">= uang cash hasil jualan + uang kas</p>${cek}`;
   }
   function catQris(R){
@@ -1245,6 +1340,15 @@
   }
   function hapusLap(t){ if(!confirm("Hapus catatan ini?")) return; riwayat = riwayat.filter(e => e.t !== t); simpanSemua(); rerender(); }
 
+  function pbrCard(no, judul, jenis, R){
+    const arr = R.L.pbr[jenis], n = jenis === "promo" ? R.PRn : jenis === "bonus" ? R.BOn : R.RUn, c = jenis === "promo" ? R.PRc : jenis === "bonus" ? R.BOc : R.RUc;
+    const rows = arr.length
+      ? arr.map(e => `<div class="ln"><span>${itemsText(e.items)}${e.ket ? ` <small>(${esc(e.ket)})</small>` : ""}</span><span>${rp(rupiahCup(e.items).v)} <button class="item-x" style="color:var(--green)" onclick="ubahPBR(${e.t})" aria-label="Ubah">✏️</button><button class="item-x" onclick="batalkanStok(${e.t})" aria-label="Batalkan">✕</button></span></div>` +
+          (jenis === "promo" ? `<div class="ln sub"><span>uang diterima ${rp(e.terima || 0)}</span><span></span></div>` : "")).join("") +
+        `<div class="ln tot"><span>Total ${c} cup</span><span>${rp(n)}</span></div>` + (jenis === "promo" ? `<div class="ln sub"><span>Potongan promo (harga normal − uang diterima)</span><span>${rp(R.PRd)}</span></div>` : "")
+      : `<p class="empty-ln">Kosong</p>`;
+    return `<div class="rcard"><h4>${no}. ${judul}</h4>${rows}<button class="linkbtn" onclick="catatPBR('${jenis}')">+ Catat ${PBR_NAMA[jenis].toLowerCase()}</button></div>`;
+  }
   function renderLaporan(){
     const R = susunLaporan(), L = R.L, tgl = tglLaporan();
     const s1 = R.rowsStok.length
@@ -1274,6 +1378,7 @@
       `<div class="rcard"><h4>5. Bon</h4>${bonHtml}${pelHtml}<div class="ln tot2"><span>Total piutang semua pelanggan</span><span>${rp(R.PT)}</span></div><p class="qm">Kelola pelunasan di tab Piutang.</p></div>` +
       `<div class="rcard"><h4>6. Pinjaman</h4><p class="qm">Uang hasil jualan yang dipakai karyawan.</p>${listLap(L.pinjam, "pinjam", R.P, "Total pinjaman", "mis. beli makan")}</div>` +
       `<div class="rcard"><h4>7. Pengeluaran</h4>${listLap(L.keluar, "keluar", R.E, "Total pengeluaran", "mis. es batu")}</div>` +
+      pbrCard("8", "Promo", "promo", R) + pbrCard("9", "Bonus", "bonus", R) + pbrCard("10", "Barang Rusak / Cacat Produk", "rusak", R) +
       `<div class="rcard calc"><h4>Perhitungan Uang Cash</h4><div id="hitungBox">${htmlHitung(R)}</div>
         <div class="ln kasrow"><span>+ Uang kas (modal kembalian)</span><span><input id="kasIn" inputmode="numeric" value="${nf(kas)}" oninput="fmtRp(this);setKas(this.value)" autocomplete="off"></span></div>
         <div id="totalBox">${htmlTotal(R)}</div></div>` +
@@ -1287,7 +1392,7 @@
     const opr = (judul, g, kata) => {
       o.push(judul);
       if(!g.length){ o.push("-"); return; }
-      g.forEach(x => { o.push(kata + " " + x.rider + ":"); Object.keys(x.items).forEach(id => o.push(bar(produk(id), x.items[id]))); });
+      g.forEach(x => { o.push(kata + " " + x.rider + ":"); urut(x.items).forEach(id => o.push(bar(produk(id), x.items[id]))); });
     };
     o.push("*LAPORAN HARIAN KANA COFFEE*");
     o.push("Tanggal: " + fmtTgl(tglLaporan()));
@@ -1325,6 +1430,18 @@
     if(L.keluar.length) L.keluar.forEach(e => o.push("- " + e.ket + ": " + rp(e.jml))); else o.push("-");
     o.push("Total " + rp(R.E));
     o.push("");
+    const pbrTxt = (no, judul, jenis, c, n) => {
+      o.push("*" + no + ". " + judul + "*");
+      const a = L.pbr[jenis];
+      if(a.length){
+        a.forEach(e => o.push("- " + itemsText(e.items) + (e.ket ? " (" + e.ket + ")" : "") + (jenis === "promo" ? " | diterima " + rp(e.terima || 0) : "")));
+        o.push("Total " + c + " cup = " + rp(n) + (jenis === "promo" ? " (potongan " + rp(R.PRd) + ")" : ""));
+      } else o.push("-");
+      o.push("");
+    };
+    pbrTxt("8", "PROMO", "promo", R.PRc, R.PRn);
+    pbrTxt("9", "BONUS", "bonus", R.BOc, R.BOn);
+    pbrTxt("10", "BARANG RUSAK / CACAT PRODUK", "rusak", R.RUc, R.RUn);
     o.push("*PERHITUNGAN UANG CASH*");
     o.push("Total stok " + rp(R.A));
     o.push("+ Stok dari rider lain " + rp(R.B));
@@ -1334,6 +1451,9 @@
     o.push("- Qris " + rp(R.Q));
     o.push("- Bon " + rp(R.N));
     o.push("- Pinjaman " + rp(R.P));
+    if(R.PRd) o.push("- Potongan promo " + rp(R.PRd));
+    if(R.BOn) o.push("- Bonus " + rp(R.BOn));
+    if(R.RUn) o.push("- Barang rusak/cacat " + rp(R.RUn));
     if(PENGELUARAN_KURANGI_CASH) o.push("- Pengeluaran " + rp(R.E));
     if(R.BL) o.push("+ Pelunasan bon lama (tunai) " + rp(R.BL));
     o.push("= Uang cash hasil jualan " + rp(R.X));
@@ -1390,6 +1510,11 @@
   Object.keys(stok).forEach(pastikanAwal); simpanSemua();
   try { if(localStorage.getItem("kana_view") === "rider") document.body.classList.add("rider"); } catch(e){}
   renderMenu(); renderCart();
+
+  // Agar bisa dipasang di layar utama & dibuka tanpa sinyal (hanya jalan lewat https)
+  if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+    window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+  }
 </script>
 </body>
 </html>
