@@ -650,7 +650,7 @@
   }
   async function kirimFoto(){
     if(!fotoFile) return;
-    const t = cartTotal(), jam = new Date().toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", ".");
+    const t = cartTotal(), d = new Date(), jam = ((d.getHours() % 12) || 12) + "." + String(d.getMinutes()).padStart(2, "0") + " " + (d.getHours() >= 12 ? "PM" : "AM");
     const teks = "Bukti QRIS " + rp(t) + " · " + jam + (namaRider.trim() ? " · " + namaRider.trim() : "");
     try {
       if(navigator.canShare && navigator.canShare({files:[fotoFile]})){ await navigator.share({files:[fotoFile], text:teks}); fotoTerkirim = true; fotoUI(); }
