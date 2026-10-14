@@ -420,9 +420,9 @@
         <p class="qnote">Minta pelanggan scan QRIS dan isi nominal <b id="qTotal">Rp 0</b></p>
         <img class="qris" id="qrisImg" alt="QRIS Kana Coffee" onclick="openQR()">
         <p class="qhint">Ketuk gambar untuk memperbesar</p>
-        <button type="button" class="fotobtn" id="fotoBtn" onclick="fotoKlik()">📷 Foto Bukti Pembayaran</button>
+        <button type="button" class="fotobtn" id="fotoBtn" onclick="fotoKlik()">📷 Foto Bukti Pembayaran (opsional)</button>
         <img id="fotoPrev" alt="Bukti pembayaran">
-        <p class="qhint" id="fotoNote">Foto layar HP pelanggan (pembayaran berhasil), lalu kirim ke grup WA sebelum tekan Selesai.</p>
+        <p class="qhint" id="fotoNote">Opsional: foto layar HP pelanggan (pembayaran berhasil) lalu kirim ke grup WA. Boleh langsung tekan Selesai.</p>
       </div>
       <div id="bonBox" style="display:none">
         <label for="bonNama">Nama pelanggan yang bon</label>
@@ -629,7 +629,7 @@
   }
   function openQR(){ document.getElementById("qrfull").classList.add("show"); }
   // ===== FOTO BUKTI QRIS -> KIRIM KE WA =====
-  const WAJIB_FOTO_QRIS = true;
+  const WAJIB_FOTO_QRIS = false;
   let fotoFile = null, fotoTerkirim = false;
   function kecilkan(file){
     return new Promise((res, rej) => {
@@ -642,8 +642,8 @@
   function fotoUI(){
     const bt = document.getElementById("fotoBtn"), pv = document.getElementById("fotoPrev"), nt = document.getElementById("fotoNote");
     bt.className = "fotobtn";
-    if(!fotoFile){ bt.textContent = "📷 Foto Bukti Pembayaran"; pv.style.display = "none"; pv.removeAttribute("src"); nt.textContent = "Foto layar HP pelanggan (pembayaran berhasil), lalu kirim ke grup WA sebelum tekan Selesai."; }
-    else if(!fotoTerkirim){ bt.textContent = "📤 Kirim ke Grup WA"; bt.classList.add("send"); nt.innerHTML = "Foto siap. Tekan tombol hijau, pilih grup WA, lalu kirim. <a href='#' onclick='fotoUlang();return false'>Foto ulang</a>"; }
+    if(!fotoFile){ bt.textContent = "📷 Foto Bukti Pembayaran (opsional)"; pv.style.display = "none"; pv.removeAttribute("src"); nt.textContent = "Opsional: foto layar HP pelanggan (pembayaran berhasil) lalu kirim ke grup WA. Boleh langsung tekan Selesai."; }
+    else if(!fotoTerkirim){ bt.textContent = "📤 Kirim ke Grup WA"; bt.classList.add("send"); nt.innerHTML = "Foto siap. Tekan tombol hijau untuk kirim ke grup WA, atau langsung tekan Selesai. <a href='#' onclick='fotoUlang();return false'>Foto ulang</a>"; }
     else { bt.textContent = "✔ Terkirim. Ketuk untuk kirim ulang"; bt.classList.add("ok"); nt.textContent = "Bukti sudah dikirim. Tekan Selesai."; }
   }
   function fotoUlang(){ fotoFile = null; fotoTerkirim = false; fotoUI(); document.getElementById("fotoIn").click(); }
