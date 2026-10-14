@@ -203,6 +203,8 @@
   .grp2{font-weight:700;font-size:13px;color:var(--green);margin:6px 0 0}
   .qm{font-size:12px;color:#777;margin:2px 0 8px}
   .linkbtn{background:none;border:0;color:var(--green);text-decoration:underline;cursor:pointer;font-size:12px;font-family:inherit}
+  .gnote{background:#fff8e1;border-left:4px solid var(--gold);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:13px;color:#5a4a1a;line-height:1.5}
+  #gNama,#gTarif,#gBon,#gPin{width:100%;font-size:16px;padding:9px 12px;border:2px solid var(--green);border-radius:10px;margin:6px 0 4px;font-family:inherit}
   #namaRider,#qrisIn{width:100%;font-size:16px;padding:9px 12px;border:2px solid var(--green);border-radius:10px;margin:6px 0 4px;font-family:inherit}
   .bonrow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dotted #ddd}
   .bonrow small{display:block;color:#777;font-size:12px}
@@ -450,6 +452,7 @@
     <button data-s="lap" onclick="stokTab('lap')">📋 Laporan</button>
     <button data-s="piutang" onclick="stokTab('piutang')">📒 Piutang</button>
     <button data-s="rekap" onclick="stokTab('rekap')">📊 Rekap</button>
+    <button data-s="gaji" onclick="stokTab('gaji')">💰 Gaji</button>
   </div>
   <div class="sheet-body" id="sheetBody"></div>
 </div>
@@ -693,7 +696,9 @@
   let awal = muat("kana_awal", {}), kas = muat("kana_kas", 100000), namaRider = muat("kana_nama", ""), qrisManual = muat("kana_qrisManual", null);
   let piutang = muat("kana_piutang", []), arsip = muat("kana_arsip", []), pelanggan = muat("kana_pelanggan", []);
   let rekapCut = muat("kana_rekapCut", 0);
-  function simpanSemua(){ simpan("kana_rekapCut", rekapCut); simpan("kana_stok", stok); simpan("kana_terjual", terjual); simpan("kana_riwayat", riwayat); simpan("kana_riders", daftarRider); simpan("kana_soldout", soldOut); simpan("kana_awal", awal); simpan("kana_kas", kas); simpan("kana_nama", namaRider); simpan("kana_qrisManual", qrisManual); simpan("kana_piutang", piutang); simpan("kana_arsip", arsip); simpan("kana_pelanggan", pelanggan); }
+  let gajiLog = muat("kana_gajilog", []);
+  let gajiCfg = Object.assign({mode:"pokok", pokok:50000, cup:1750, bonMan:null, pinjamMan:null}, muat("kana_gaji", {}));
+  function simpanSemua(){ simpan("kana_gajilog", gajiLog); simpan("kana_gaji", gajiCfg); simpan("kana_rekapCut", rekapCut); simpan("kana_stok", stok); simpan("kana_terjual", terjual); simpan("kana_riwayat", riwayat); simpan("kana_riders", daftarRider); simpan("kana_soldout", soldOut); simpan("kana_awal", awal); simpan("kana_kas", kas); simpan("kana_nama", namaRider); simpan("kana_qrisManual", qrisManual); simpan("kana_piutang", piutang); simpan("kana_arsip", arsip); simpan("kana_pelanggan", pelanggan); }
   function hasStok(id){ return stok[id] !== undefined; }
   function isSold(id){ return !!soldOut[id] || (hasStok(id) && stok[id] <= 0); }
   function left(id){ return hasStok(id) ? stok[id] : Infinity; }
@@ -791,6 +796,8 @@
       b.innerHTML = htmlPiutang();
     } else if(sTab === "rekap"){
       b.innerHTML = htmlRekap();
+    } else if(sTab === "gaji"){
+      renderGaji();
     } else {
       if(editT !== null){
         const eo = riwayat.find(x => x.t === editT && x.type === "jual");
@@ -1338,11 +1345,12 @@
   function catatPBR(j){ stokTab("oper"); setOper(j); }
   function resetHari(){
     if(!confirm("Mulai hari baru? Penjualan, pinjaman, pengeluaran, dan laporan hari ini akan ditutup dan diarsipkan ke tab Rekap. Bon yang belum lunas dipindah ke tab Piutang dan tetap tersimpan. Semua stok akan direset ke kosong, isi lagi di tab Stok Awal besok pagi. Pastikan laporan sudah dikirim.")) return;
+    catatGajiHari();
     arsipkanRiwayat();
     riwayat.filter(e => e.type === "jual" && e.pay === "bon" && !e.lunas).forEach(e => {
       if(!piutang.some(x => x.t === e.t)) piutang.push({t:e.t, nama:e.nama || "-", items:Object.assign({}, e.items), total:e.total});
     });
-    riwayat = []; terjual = {}; qrisManual = null;
+    riwayat = []; terjual = {}; qrisManual = null; gajiCfg.bonMan = null; gajiCfg.pinjamMan = null;
     stok = {}; awal = {}; soldOut = {}; draft = {};
     simpanSemua(); renderStok(); renderMenu();
   }
@@ -1700,6 +1708,118 @@
       return;
     }
     window.open("https://wa.me/?text=" + encodeURIComponent(teksSisa()), "_blank");
+  }
+  // ===== TAB GAJI KARYAWAN =====
+  function gajiHitung(){
+    const R = susunLaporan(), L = R.L, c = gajiCfg;
+    const cup = rowsTerjual(L).reduce((a, r) => a + r.q, 0);
+    const nm = namaRider.trim().toLowerCase();
+    const bons = nm ? L.bon.filter(e => !e.lunas && String(e.nama || "").trim().toLowerCase() === nm) : [];
+    const bonAuto = bons.reduce((s, e) => s + e.total, 0);
+    const bon = c.bonMan === null ? bonAuto : c.bonMan;
+    const pin = c.pinjamMan === null ? R.P : c.pinjamMan;
+    const gaji = c.mode === "cup" ? cup * c.cup : c.pokok;
+    return {cup, bons, bonAuto, bon, pinAuto:R.P, pin, gaji, bersih: gaji - bon - pin};
+  }
+  const rpS = n => (n < 0 ? "−" : "") + rp(Math.abs(n));
+  function renderGaji(){
+    const b = document.getElementById("sheetBody"), c = gajiCfg;
+    b.innerHTML = `<p class="hint">Hitung gaji karyawan hari ini dari laporan. Bon minum dan pinjaman dibaca otomatis dari tab Laporan.</p>` +
+      `<div class="rcard"><h4>Karyawan</h4><input id="gNama" placeholder="Nama karyawan" value="${esc(namaRider)}" oninput="namaRider=this.value;simpanSemua();updGaji()" autocomplete="off"><p class="qm">Nama harus sama dengan nama di bon agar bon minum terdeteksi otomatis.</p></div>` +
+      `<div class="rcard"><h4>Jenis gaji</h4><div class="seg"><button class="${c.mode === "pokok" ? "on" : ""}" onclick="gajiMode('pokok')">Gaji Pokok Harian</button><button class="${c.mode === "cup" ? "on" : ""}" onclick="gajiMode('cup')">Gaji per Cup</button></div>` +
+      `<p class="qm">${c.mode === "cup" ? "Tarif per cup (bisa diubah)" : "Gaji pokok per hari (bisa diubah)"}</p><input id="gTarif" inputmode="numeric" value="${nf(c.mode === "cup" ? c.cup : c.pokok)}" oninput="fmtRp(this);gajiTarif(this.value)" autocomplete="off"></div>` +
+      `<div id="gajiHasil"></div>` +
+      `<div class="rcard"><h4>Potongan manual (opsional)</h4><p class="qm">Bon minum</p><input id="gBon" inputmode="numeric" placeholder="Kosongkan = otomatis dari laporan" value="${c.bonMan === null ? "" : nf(c.bonMan)}" oninput="fmtRp(this);gajiBon(this.value)" autocomplete="off"><p class="qm" style="margin-top:10px">Pinjaman</p><input id="gPin" inputmode="numeric" placeholder="Kosongkan = otomatis dari laporan" value="${c.pinjamMan === null ? "" : nf(c.pinjamMan)}" oninput="fmtRp(this);gajiPinjam(this.value)" autocomplete="off"></div>` +
+      `<button class="done wa" onclick="kirimSlip()">📲 Kirim Slip Gaji ke WA</button><div id="gajiMinggu" style="margin-top:14px"></div>`;
+    updGaji();
+  }
+  function updGaji(){
+    const el = document.getElementById("gajiHasil"); if(!el) return;
+    const g = gajiHitung(), c = gajiCfg, nm = namaRider.trim();
+    let h = `<div class="rcard"><h4>Hitungan Gaji</h4>`;
+    h += c.mode === "cup"
+      ? `<div class="ln"><span>Gaji per cup (${g.cup} cup × ${rp(c.cup)})</span><span>${rp(g.gaji)}</span></div>`
+      : `<div class="ln"><span>Gaji pokok harian</span><span>${rp(g.gaji)}</span></div>`;
+    h += `<div class="ln"><span>− Bon minum ${c.bonMan === null ? "(otomatis)" : "(manual)"}</span><span>${rp(g.bon)}</span></div>`;
+    if(c.bonMan === null){
+      if(!nm) h += `<p class="qm">Isi nama karyawan agar bon minum terdeteksi.</p>`;
+      else if(!g.bons.length) h += `<p class="qm">Tidak ada bon belum bayar atas nama ${esc(nm)} di laporan.</p>`;
+      else h += g.bons.map(e => `<div class="ln sub"><span>${itemsText(e.items)}</span><span>${rp(e.total)}</span></div>`).join("");
+    }
+    h += `<div class="ln"><span>− Pinjaman ${c.pinjamMan === null ? "(dari laporan)" : "(manual)"}</span><span>${rp(g.pin)}</span></div>`;
+    h += `<div class="ln tot2"><span>Gaji bersih</span><span>${rpS(g.bersih)}</span></div>` +
+      `<div class="gnote"><b>⚠️ Disclaimer:</b> ini cuma perkiraan, jangan terlalu ambil patokan dari sini.<br><br><i>man to man :<br>bagi gajimu ke ibu, lalu kamu bebas bergaya dengan sisa uang mu😜🤙</i></div></div>`;
+    if(g.bersih < 0) h += `<div class="warn">Potongan lebih besar dari gaji. Kurang ${rp(-g.bersih)}.</div>`;
+    el.innerHTML = h;
+    updMinggu();
+  }
+  // ----- rekap mingguan gaji -----
+  let gajiMgOff = 0;
+  const tglD = d => tglKey(d.getTime());
+  function awalMinggu(d){ const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; }
+  function catatGajiHari(){
+    if(!riwayat.length) return;
+    const g = gajiHitung(), nama = namaRider.trim() || "-", tg = tglD(tglLaporan());
+    gajiLog = gajiLog.filter(x => !(x.tgl === tg && x.nama === nama));
+    gajiLog.push({tgl:tg, nama, mode:gajiCfg.mode, cup:g.cup, gaji:g.gaji, bon:g.bon, pin:g.pin, bersih:g.bersih});
+    gajiLog = gajiLog.slice(-400);
+  }
+  function dataMinggu(off){
+    const mon = awalMinggu(new Date()); mon.setDate(mon.getDate() + 7 * off);
+    const sun = new Date(mon); sun.setDate(sun.getDate() + 6);
+    const a = tglD(mon), z = tglD(sun);
+    const list = gajiLog.filter(x => x.tgl >= a && x.tgl <= z).map(x => Object.assign({}, x));
+    if(riwayat.length){
+      const tg = tglD(tglLaporan()), nama = namaRider.trim() || "-";
+      if(tg >= a && tg <= z && !list.some(x => x.tgl === tg && x.nama === nama)){
+        const g = gajiHitung(); list.push({tgl:tg, nama, mode:gajiCfg.mode, cup:g.cup, gaji:g.gaji, bon:g.bon, pin:g.pin, bersih:g.bersih, live:true});
+      }
+    }
+    const grp = {}; list.sort((p, q) => p.tgl < q.tgl ? -1 : 1).forEach(x => { (grp[x.nama] = grp[x.nama] || []).push(x); });
+    const opt = {day:"numeric", month:"short"}, opt2 = {day:"numeric", month:"short", year:"numeric"};
+    return {grp, label: mon.toLocaleDateString("id-ID", opt) + " – " + sun.toLocaleDateString("id-ID", opt2)};
+  }
+  const hariS = tg => new Date(tg + "T00:00:00").toLocaleDateString("id-ID", {weekday:"short", day:"numeric", month:"short"});
+  function updMinggu(){
+    const el = document.getElementById("gajiMinggu"); if(!el) return;
+    const D = dataMinggu(gajiMgOff), names = Object.keys(D.grp);
+    let h = `<div class="rcard"><h4>📅 Rekap Gaji Mingguan</h4><div class="seg" style="margin-bottom:6px"><button onclick="gajiMinggu(-1)">‹ Sebelumnya</button><button onclick="gajiMinggu(1)" ${gajiMgOff >= 0 ? "disabled style=\"opacity:.4\"" : ""}>Berikutnya ›</button></div><p class="qm" style="text-align:center;font-weight:700">${gajiMgOff === 0 ? "Minggu ini" : gajiMgOff === -1 ? "Minggu lalu" : "Minggu"} · ${D.label}</p>`;
+    if(!names.length) h += `<p class="empty-ln">Belum ada data gaji di minggu ini. Data gaji tersimpan otomatis setiap kali tekan Mulai Hari Baru.</p>`;
+    names.forEach(n => {
+      const rows = D.grp[n], tot = rows.reduce((s, x) => s + x.bersih, 0), cup = rows.reduce((s, x) => s + x.cup, 0);
+      h += `<div class="grp">${esc(n)}</div>` + rows.map(x => `<div class="ln"><span>${hariS(x.tgl)} · ${x.cup} cup${x.live ? " <small>(hari ini, belum ditutup)</small>" : ""}</span><span>${rpS(x.bersih)}</span></div>` + ((x.bon || x.pin) ? `<div class="ln sub"><span>${x.mode === "cup" ? "gaji per cup" : "gaji pokok"} ${rp(x.gaji)}${x.bon ? " − bon " + rp(x.bon) : ""}${x.pin ? " − pinjam " + rp(x.pin) : ""}</span><span></span></div>` : "")).join("") +
+        `<div class="ln tot"><span>Total ${rows.length} hari · ${cup} cup</span><span>${rpS(tot)}</span></div>`;
+    });
+    h += (names.length ? `<button class="done wa" onclick="kirimMinggu()">📲 Kirim Rekap Mingguan ke WA</button>` : "") + `<p class="qm" style="margin-top:8px">Perkiraan saja. Hari yang sudah ditutup memakai tarif dan potongan saat hari itu ditutup.</p></div>`;
+    el.innerHTML = h;
+  }
+  function gajiMinggu(d){ if(gajiMgOff + d > 0) return; gajiMgOff += d; updMinggu(); }
+  function kirimMinggu(){
+    const D = dataMinggu(gajiMgOff), o = ["*REKAP GAJI MINGGUAN*", D.label, ""];
+    Object.keys(D.grp).forEach(n => {
+      const rows = D.grp[n];
+      o.push("*" + n + "*");
+      rows.forEach(x => o.push(hariS(x.tgl) + " - " + x.cup + " cup: " + rpS(x.bersih) + (x.bon || x.pin ? " (gaji " + rp(x.gaji) + (x.bon ? " - bon " + rp(x.bon) : "") + (x.pin ? " - pinjam " + rp(x.pin) : "") + ")" : "")));
+      o.push("*Total: " + rpS(rows.reduce((s, x) => s + x.bersih, 0)) + "*"); o.push("");
+    });
+    window.open("https://wa.me/?text=" + encodeURIComponent(o.join("\n")), "_blank");
+  }
+  function gajiMode(m){ gajiCfg.mode = m; simpanSemua(); renderGaji(); }
+  function gajiTarif(v){ if(gajiCfg.mode === "cup") gajiCfg.cup = digits(v); else gajiCfg.pokok = digits(v); simpanSemua(); updGaji(); }
+  function gajiBon(v){ gajiCfg.bonMan = v === "" ? null : digits(v); simpanSemua(); updGaji(); }
+  function gajiPinjam(v){ gajiCfg.pinjamMan = v === "" ? null : digits(v); simpanSemua(); updGaji(); }
+  function kirimSlip(){
+    const g = gajiHitung(), c = gajiCfg, o = [];
+    o.push("*SLIP GAJI KARYAWAN*");
+    o.push("Tanggal: " + fmtTgl(tglLaporan()));
+    o.push("Nama: " + (namaRider.trim() || "-"));
+    o.push("");
+    o.push(c.mode === "cup" ? "Gaji per cup: " + g.cup + " cup x " + rp(c.cup) + " = " + rp(g.gaji) : "Gaji pokok harian: " + rp(g.gaji));
+    o.push("Potongan bon minum: " + rp(g.bon) + (c.bonMan === null ? "" : " (manual)"));
+    o.push("Potongan pinjaman: " + rp(g.pin) + (c.pinjamMan === null ? "" : " (manual)"));
+    o.push("");
+    o.push("*Gaji bersih: " + rpS(g.bersih) + "*");
+    window.open("https://wa.me/?text=" + encodeURIComponent(o.join("\n")), "_blank");
   }
   function kirimWA(){ window.open("https://wa.me/?text=" + encodeURIComponent(teksLaporan()), "_blank"); }
 
