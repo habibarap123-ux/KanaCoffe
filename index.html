@@ -631,6 +631,8 @@
     }
   }
   function openQR(){ document.getElementById("qrfull").classList.add("show"); }
+  function jam12(d){ d = d instanceof Date ? d : new Date(d); const h = d.getHours(); return ((h % 12) || 12) + "." + String(d.getMinutes()).padStart(2, "0") + " " + (h >= 12 ? "PM" : "AM"); }
+  const jamLabel = j => ((j % 12) || 12) + (j < 12 ? "a" : "p");
   // ===== FOTO BUKTI QRIS -> KIRIM KE WA =====
   const WAJIB_FOTO_QRIS = false;
   let fotoFile = null, fotoTerkirim = false;
@@ -654,7 +656,7 @@
   function onFoto(inp){
     const f = inp.files && inp.files[0]; inp.value = ""; if(!f) return;
     kecilkan(f).then(b => {
-      const t = new Date(), jam = t.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", ".");
+      const t = new Date(), jam = jam12(t);
       fotoFile = new File([b], "bukti-qris-" + jam + "-" + cartTotal() + ".jpg", {type:"image/jpeg"}); fotoTerkirim = false;
       const pv = document.getElementById("fotoPrev"); pv.src = URL.createObjectURL(b); pv.style.display = "block";
       fotoUI();
@@ -662,7 +664,7 @@
   }
   async function kirimFoto(){
     if(!fotoFile) return;
-    const t = cartTotal(), d = new Date(), jam = ((d.getHours() % 12) || 12) + "." + String(d.getMinutes()).padStart(2, "0") + " " + (d.getHours() >= 12 ? "PM" : "AM");
+    const t = cartTotal(), d = new Date(), jam = jam12(d);
     const teks = "Bukti QRIS " + rp(t) + " · " + jam + (namaRider.trim() ? " · " + namaRider.trim() : "");
     try {
       if(navigator.canShare && navigator.canShare({files:[fotoFile]})){ await navigator.share({files:[fotoFile], text:teks}); fotoTerkirim = true; fotoUI(); }
@@ -846,7 +848,7 @@
       let lastDay = "";
       const rows = flt.slice().reverse().slice(0, 80).map(e => {
         const dt = new Date(e.t), day = dt.toLocaleDateString("id-ID", {weekday:"long", day:"numeric", month:"long"});
-        const jam = dt.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", ".");
+        const jam = jam12(dt);
         const head = day !== lastDay ? `<div class="rwday">${day}</div>` : ""; lastDay = day;
         const x = info(e);
         return head + `<div class="rw ${x.c}"><div class="rwic">${x.ic}</div><div class="rwbody"><div class="rwtop"><b>${x.t}</b>${x.amt ? `<span class="rwamt">${x.amt}</span>` : ""}</div>${x.d ? `<div class="rwd">${x.d}</div>` : ""}<div class="rwtime">${jam}</div>${x.act ? `<div class="logact">${x.act}</div>` : ""}</div></div>`;
@@ -899,7 +901,7 @@
   }
   function setEditPay(p){ editPay = p; rerender(); }
   function htmlEditor(e){
-    const w = new Date(e.t).toLocaleString("id-ID", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
+    const w = new Date(e.t).toLocaleDateString("id-ID", {day:"numeric", month:"short"}) + ", " + jam12(e.t);
     const row = m => `<div class="srow"><div class="sn"><b>${m.name}</b><small>${rp(m.price)}${hasStok(m.id) ? " · stok tersedia: " + (stok[m.id] + (e.items[m.id]||0)) : ""}</small></div>
       <div class="step"><button onclick="stepEdit(${m.id},-1)">−</button><input class="qin" id="eq${m.id}" inputmode="numeric" value="${editItems[m.id]||0}" oninput="setEditQ(${m.id},this)"><button onclick="stepEdit(${m.id},1)">+</button></div></div>`;
     const pb = (p, lbl) => `<button class="${editPay === p ? "on" : ""}" onclick="setEditPay('${p}')">${lbl}</button>`;
@@ -1110,9 +1112,9 @@
       if(jk.length){
         const lo = Math.min.apply(null, jk), hi = Math.max.apply(null, jk), jmx = Math.max.apply(null, jk.map(k => T.jam[k]));
         let cols = "";
-        for(let j = lo; j <= hi; j++){ const v = T.jam[j] || 0; cols += `<div class="col${v === jmx ? " top" : ""}"><span>${v || ""}</span><div class="b" style="height:${v ? Math.max(4, Math.round(v / jmx * 80)) : 2}px"></div><small>${pad2(j)}</small></div>`; }
+        for(let j = lo; j <= hi; j++){ const v = T.jam[j] || 0; cols += `<div class="col${v === jmx ? " top" : ""}"><span>${v || ""}</span><div class="b" style="height:${v ? Math.max(4, Math.round(v / jmx * 80)) : 2}px"></div><small>${jamLabel(j)}</small></div>`; }
         const puncak = jk.filter(k => T.jam[k] === jmx)[0];
-        h += `<div class="rcard"><h4>⏰ Jam ramai</h4><p class="qm">Paling ramai sekitar jam ${pad2(puncak)}.00 (${jmx} cup). Angka di atas batang = jumlah cup.</p><div class="hours">${cols}</div></div>`;
+        h += `<div class="rcard"><h4>⏰ Jam ramai</h4><p class="qm">Paling ramai sekitar jam ${(puncak % 12) || 12} ${puncak < 12 ? "AM" : "PM"} (${jmx} cup). Angka di atas batang = jumlah cup.</p><div class="hours">${cols}</div></div>`;
       }
     }
     // arsip per minggu
@@ -1205,7 +1207,7 @@
   }
   function setEditStokJenis(j){ editStokJenis = j; rerender(); }
   function htmlEditorStok(e){
-    const w = new Date(e.t).toLocaleString("id-ID", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"});
+    const w = new Date(e.t).toLocaleDateString("id-ID", {day:"numeric", month:"short"}) + ", " + jam12(e.t);
     const row = m => `<div class="srow"><div class="sn"><b>${m.name}</b><small>Sisa sekarang: ${hasStok(m.id) ? stok[m.id] : 0}</small></div>
       <div class="step"><button onclick="stepEditStok(${m.id},-1)">−</button><input class="qin" id="es${m.id}" inputmode="numeric" value="${editStokItems[m.id] || 0}" oninput="setEditStokQ(${m.id},this)"><button onclick="stepEditStok(${m.id},1)">+</button></div></div>`;
     const pb = (j, lbl) => `<button class="${editStokJenis === j ? "on" : ""}" onclick="setEditStokJenis('${j}')">${lbl}</button>`;
@@ -1452,7 +1454,7 @@
     const cek = sel > 0 ? `<div class="warn2">Catatan: hitungan stok menunjukkan terjual ${rp(R.S)}, sedangkan kasir + promo/bonus/rusak mencatat ${rp(R.rec + R.PB)} (selisih ${rp(sel)}). Periksa stok sisa atau penjualan yang belum dicatat di kasir.</div>` : "";
     return `<div class="ln grand${R.TT < 0 ? " neg" : ""}"><span>TOTAL UANG DI TANGAN</span><span>${rp(R.TT)}</span></div><p class="qm2">= uang cash hasil jualan + uang kas</p>${cek}`;
   }
-  const jamQ = t => new Date(t).toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", ".");
+  const jamQ = t => jam12(new Date(t));
   function rincianQris(R){
     const L = R.L, list = L.qrisList.slice().sort((a, b) => a.t - b.t);
     const lama = L.pelunasan.filter(e => e.metode === "qris").sort((a, b) => a.t - b.t);
@@ -1584,7 +1586,7 @@
     o.push("*LAPORAN HARIAN KANA COFFEE*");
     o.push("Hari: " + tglLaporan().toLocaleDateString("id-ID", {weekday:"long"}));
     o.push("Tanggal: " + fmtTgl(tglLaporan()));
-    o.push("Jam kirim: " + now.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", "."));
+    o.push("Jam kirim: " + jam12(now));
     o.push("Karyawan: " + (namaRider.trim() || "-"));
     o.push("");
     // 1
@@ -1621,7 +1623,7 @@
         const tot = ql.reduce((x, y) => x + y.total, 0), cp = ql.reduce((x, y) => x + rupiahCup(y.items).q, 0);
         it.push({b:"Rincian " + ql.length + " transaksi / " + cp + " cup"});
         ql.forEach(x => {
-          const jm = new Date(x.t).toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", ".");
+          const jm = jam12(new Date(x.t));
           it.push(jm + (x.src === "bon" ? " bon " + (x.nama || "-") : ""));
           it.push("  " + urut(x.items).map(id => x.items[id] + "x " + nameOf(id)).join(", "));
           it.push("  " + rp(x.total));
@@ -1691,7 +1693,7 @@
       "*LAPORAN SISA STOK KANA COFFEE*",
       "Hari: " + now.toLocaleDateString("id-ID", {weekday:"long"}),
       "Tanggal: " + now.toLocaleDateString("id-ID", {day:"numeric", month:"long", year:"numeric"}),
-      "Jam: " + now.toLocaleTimeString("id-ID", {hour:"2-digit", minute:"2-digit"}).replace(":", "."),
+      "Jam: " + jam12(now),
       "Nama: " + (namaRider.trim() || "-"),
       "",
       "*SISA STOK*",
