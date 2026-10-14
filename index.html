@@ -299,7 +299,8 @@
 
   @media(max-width:640px){
     nav{display:none}
-    .rider-btn{margin-left:auto}
+    body:not(.rider) .cart-btn{margin-left:auto}
+    body.rider .stok-btn{margin-left:auto}
     .stabs button{padding:7px 4px;font-size:12.5px}
     .grid{grid-template-columns:repeat(2,1fr);gap:14px}
     .info h4{font-size:13px}
@@ -340,11 +341,10 @@
     <nav>
       <a href="#home">Home</a><a href="#menu">Menu</a><a href="#tentang">Tentang Kami</a><a href="#lokasi">Lokasi</a><a href="#kontak">Hubungi Kami</a>
     </nav>
-    <button class="rider-btn" onclick="toggleRider()" aria-label="Mode Rider" title="Mode Rider">🛵</button>
     <button class="stok-btn" onclick="openStok()" aria-label="Kelola Stok" title="Kelola Stok">📦</button>
     <button class="cart-btn" onclick="toggleCart()" aria-label="Keranjang">🛒<span id="count">0</span></button>
   </div>
-  <div class="riderbar" id="riderbar"><span>MODE RIDER aktif</span><button onclick="openStok()">📦 Kelola Stok</button><button onclick="openStok('lap')">📋 Laporan</button><button onclick="openStok('piutang')">📒 Piutang</button><button onclick="kirimSisaWA()">📲 Kirim Sisa</button><button onclick="toggleRider()">Keluar</button></div>
+  <div class="riderbar" id="riderbar"><span>MODE RIDER aktif</span><button onclick="openStok()">📦 Kelola Stok</button><button onclick="openStok('lap')">📋 Laporan</button><button onclick="openStok('piutang')">📒 Piutang</button><button onclick="kirimSisaWA()">📲 Kirim Sisa</button><button onclick="toggleRider()">🔒 Kunci</button></div>
 </header>
 
 <section class="hero" id="home">
@@ -1699,6 +1699,20 @@
 
   Object.keys(stok).forEach(pastikanAwal); simpanSemua();
   try { if(localStorage.getItem("kana_view") === "rider") document.body.classList.add("rider"); } catch(e){}
+  // ===== KUNCI MODE KARYAWAN (tanpa PIN) =====
+  // Masuk: ketuk logo 5x berturut-turut, atau buka link dengan akhiran #kana-rider
+  // Keluar: tombol "🔒 Kunci" di bar kuning. HP karyawan tetap ingat mode ini.
+  const KODE_KARYAWAN = "kana-rider";
+  (function(){
+    let n = 0, tm = null;
+    const logo = document.querySelector("header .logo");
+    if(logo) logo.addEventListener("click", () => {
+      n++; clearTimeout(tm); tm = setTimeout(() => { n = 0; }, 2500);
+      if(n >= 5){ n = 0; if(!document.body.classList.contains("rider")){ setView(true); toast("Mode karyawan aktif"); } }
+    });
+    function cekHash(){ if(location.hash === "#" + KODE_KARYAWAN){ setView(true); toast("Mode karyawan aktif"); try { history.replaceState(null, "", location.pathname + location.search); } catch(e){} } }
+    window.addEventListener("hashchange", cekHash); cekHash();
+  })();
   renderMenu(); renderCart();
 
   // Agar bisa dipasang di layar utama & dibuka tanpa sinyal (hanya jalan lewat https)
